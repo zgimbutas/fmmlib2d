@@ -1,0 +1,75 @@
+
+This is the first public release of the particle FMM library in R^2.
+Date: April 13, 2012
+
+Version 1.2 - First external release.
+
+%% Copyright (C) 2010-2012: Leslie Greengard and Zydrunas Gimbutas
+%% Contact: greengard@cims.nyu.edu
+%% 
+%% This program is free software; you can redistribute it and/or modify 
+%% it under the terms of the GNU General Public License as published by 
+%% the Free Software Foundation; either version 2 of the License, or 
+%% (at your option) any later version.  This program is distributed in 
+%% the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
+%% even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+%% PARTICULAR PURPOSE.  See the GNU General Public License for more 
+%% details. You should have received a copy of the GNU General Public 
+%% License along with this program; 
+%% if not, see <http://www.gnu.org/licenses/>.
+
+
+src/ - Fortran source code
+examples/ - Fortran testing drivers and makefiles
+matlab/ - matlab scripts and mex files 
+contrib/mwrap-0.33.3/ - mwrap source code
+
+To test the library, please type 'make test'. 
+
+
+Fortran
+=======
+
+Particle FMM routines.
+
+hfmm2dpartself - Helmholtz particle FMM in R^2.
+lfmm2dpartself - Laplace particle FMM in R^2 (complex).
+rfmm2dpartself - Laplace particle FMM in R^2 (real).
+zfmm2dpartself - Laplace particle FMM in R^2 (Cauchy sums).
+cfmm2dpartself - Laplace particle FMM in R^2 (generalized Cauchy sums).
+
+hfmm2dparttarg - Helmholtz particle target FMM in R^2.
+lfmm2dparttarg - Laplace particle target FMM in R^2 (complex).
+rfmm2dparttarg - Laplace particle target FMM in R^2 (real).
+zfmm2dparttarg - Laplace particle target FMM in R^2 (Cauchy sums).
+cfmm2dparttarg - Laplace particle target FMM in R^2 (generalized Cauchy sums).
+
+Direct evaluation routines.
+
+h2dpartdirect - Helmholtz particle target interactions in R^2.
+l2dpartdirect - Laplace particle target interactions in R^2 (complex).
+r2dpartdirect - Laplace particle target interactions in R^2 (real).
+z2dpartdirect - Laplace particle target interactions in R^2 (Cauchy).
+c2dpartdirect - Laplace particle target interactions in R^2 (g. Cauchy).
+
+
+Matlab
+======
+
+% Helmholtz and Laplace FMMs in R^2.
+%
+% Particle FMM routines.
+%   hfmm2dpart      - Helmholtz particle FMM in R^2.
+%   lfmm2dpart      - Laplace particle FMM in R^2 (complex).
+%   rfmm2dpart      - Laplace particle FMM in R^2 (real).
+%   zfmm2dpart      - Laplace particle FMM in R^2 (Cauchy sums).
+%   cfmm2dpart      - Laplace particle FMM in R^2 (g. Cauchy sums).
+%
+% Direct evaluation routines.
+%   h2dpartdirect - Helmholtz particle target interactions in R^2.
+%   l2dpartdirect - Laplace particle target interactions in R^2 (complex).
+%   r2dpartdirect - Laplace particle target interactions in R^2 (real).
+%   z2dpartdirect - Laplace particle target interactions in R^2 (Cauchy).
+%   c2dpartdirect - Laplace particle target interactions in R^2 (g. Cauchy).
+%
+

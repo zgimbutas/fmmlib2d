@@ -1,0 +1,1805 @@
+@function Readme()
+%README
+%
+% Copyright (C) 2010-2012: Leslie Greengard and Zydrunas Gimbutas
+% Contact: greengard@cims.nyu.edu
+% 
+% This program is free software; you can redistribute it and/or modify 
+% it under the terms of the GNU General Public License as published by 
+% the Free Software Foundation; either version 2 of the License, or 
+% (at your option) any later version.  This program is distributed in 
+% the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
+% even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+% PARTICULAR PURPOSE.  See the GNU General Public License for more 
+% details. You should have received a copy of the GNU General Public 
+% License along with this program; 
+% if not, see <http://www.gnu.org/licenses/>.
+%
+
+
+@function [U]=hfmm2dpart(iprec,zk,nsource,source,ifcharge,charge,ifdipole,dipstr,dipvec,ifpot,ifgrad,ifhess,ntarget,target,ifpottarg,ifgradtarg,ifhesstarg)
+%HFMM2DPART Helmholtz particle target FMM in R^2.
+%
+% Helmholtz FMM in R^2: evaluate all pairwise particle
+% interactions (ignoring self-interactions) and interactions with targets.
+%
+% hfmm2d: charge and dipstr are complex valued, x \in R^2
+%
+% \phi(x_i) = (ima/4) \sum_{j\ne i}   charge_j H^{(1)}_0(k |x_i-x_j| )
+%             + dipstr_j (dipvec_j \dot \grad_j H^{(1)}_0(k |x_i-x_j| )
+%
+% or, more precisely,
+%
+% \phi(x_i) = (ima/4) \sum_{j\ne i}   charge_j H^{(1)}_0(k |x_i-x_j| )
+% + dipstr_j (dipvec_j \dot (x_i-x_j) ) H^{(1)}_1(k |x_i-x_j|) *k/|x_i-x_j|
+%
+%
+% [U]=HFMM2DPART(IPREC,ZK,NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC);
+%
+% [U]=HFMM2DPART(IPREC,ZK,NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC,IFPOT,IFGRAD,IFHESS);
+%
+% [U]=HFMM2DPART(IPREC,ZK,NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC,IFPOT,IFGRAD,IFHESS,...
+%         NTARGET,TARGET,IFPOTTARG,IFGRADTARG,IFHESSTARG);
+%
+%
+% This subroutine evaluates the Helmholtz potential, gradient and hessian due
+% to a collection of charges and dipoles. We use H_0(kr)*(ima/4) for the 
+% Green's function. 
+%
+% Self-interactions are not-included.
+%
+% Input parameters:
+% 
+% iprec - FMM precision flag
+%
+%             -2 => tolerance =.5d0   =>  
+%             -1 => tolerance =.5d-1  =>  1 digit 
+%              0 => tolerance =.5d-2  =>  2 digits
+%              1 => tolerance =.5d-3  =>  3 digits
+%              2 => tolerance =.5d-6  =>  6 digits
+%              3 => tolerance =.5d-9  =>  9 digits
+%              4 => tolerance =.5d-12 => 12 digits
+%              5 => tolerance =.5d-15 => 15 digits
+%
+% zk - complex Helmholtz parameter
+% nsource - number of sources
+% source - real (2,nsource): source locations
+% ifcharge - charge computation flag
+%
+%         0 => do not compute
+%         1 => include charge contribution
+% 
+% charge - complex (nsource): charge strengths 
+% ifdipole - dipole computation flag
+%
+%         0 => do not compute
+%         1 => include dipole contributions
+% 
+% dipole - complex (nsource): dipole strengths
+% dipvec - real (2,source): dipole orientation vectors
+%
+% ifpot - potential computation flag, 1 => compute the potential, otherwise no
+% ifgrad - gradient computation flag, 1 => compute the gradient, otherwise no
+% ifhess - hessian computation flag, 1 => compute the hessian, otherwise no
+%
+% ntarget - number of targets
+% target - real (2,ntarget): target locations
+%
+% ifpottarg - target potential computation flag, 
+%      1 => compute the target potential, otherwise no
+% ifgradtarg - target gradient computation flag, 
+%      1 => compute the target gradient, otherwise no
+% ihesstarg - target hessian computation flag 
+%      1 => compute the hessian, otherwise no
+%
+% Output parameters: 
+%
+% U.pot - complex (nsource) - potential at source locations
+% U.grad - complex (2,nsource) - gradient  at source locations
+% U.hess - complex (3,nsource) - hessian at source locations
+% U.pottarg - complex (ntarget) - potential at target locations
+% U.gradtarg - complex (2,ntarget) - gradient  at target locations
+% U.hesstarg - complex (3,ntarget) - hessian at target locations
+%
+% U.ier - error return code
+%
+%             ier=0     =>  normal execution
+%             ier=4     =>  cannot allocate tree workspace
+%             ier=8     =>  cannot allocate bulk FMM  workspace
+%             ier=16    =>  cannot allocate mpole expansion workspace in FMM
+%
+
+if( nargin == 10 ) 
+  ifpot = 1;
+  ifgrad = 1;
+  ifhess = 1;
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 12 ) 
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 14 ) 
+  ifpottarg = 1;
+  ifgradtarg = 1;
+  ifhesstarg = 1;
+end
+
+
+ifcharge = double(ifcharge); ifdipole = double(ifdipole);
+ifpot = double(ifpot); ifgrad = double(ifgrad); ifhess = double(ifhess);
+ifpottarg = double(ifpottarg); ifgradtarg = double(ifgradtarg);
+ifhesstarg = double(ifhesstarg);
+
+pot=0;
+grad=zeros(2,1);
+hess=zeros(3,1);
+pottarg=0;
+gradtarg=zeros(2,1);
+hesstarg=zeros(3,1);
+
+if( ifpot == 1 ), pot=zeros(1,nsource)+1i*zeros(1,nsource); end;
+if( ifgrad == 1 ), grad=zeros(2,nsource)+1i*zeros(2,nsource); end;
+if( ifhess == 1 ), hess=zeros(3,nsource)+1i*zeros(3,nsource); end;
+if( ifpottarg == 1 ), pottarg=zeros(1,ntarget)+1i*zeros(1,ntarget); end;
+if( ifgradtarg == 1 ), gradtarg=zeros(2,ntarget)+1i*zeros(2,ntarget); end;
+if( ifhesstarg == 1 ), hesstarg=zeros(3,ntarget)+1i*zeros(3,ntarget); end;
+
+ier=0;
+
+if( ntarget == 0 ) 
+# FORTRAN hfmm2dpartself(inout int[1] ier, int[1] iprec, dcomplex[1] zk, int[1] nsource, double[2,nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double [2,nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess);
+else
+# FORTRAN hfmm2dparttarg(inout int[1] ier, int[1] iprec, dcomplex[1] zk, int[1] nsource, double[2,nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double [2,nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
+end
+
+
+if( ifpot == 1 ) U.pot=pot; end
+if( ifgrad == 1 ) U.grad=grad; end
+if( ifhess == 1 ) U.hess=hess; end
+if( ifpottarg == 1 ) U.pottarg=pottarg; end
+if( ifgradtarg == 1 ) U.gradtarg=gradtarg; end
+if( ifhesstarg == 1 ) U.hesstarg=hesstarg; end
+U.ier=ier;
+
+
+
+@function [U]=h2dpartdirect(zk,nsource,source,ifcharge,charge,ifdipole,dipstr,dipvec,ifpot,ifgrad,ifhess,ntarget,target,ifpottarg,ifgradtarg,ifhesstarg)
+%H2DPARTDIRECT Helmholtz interactions in R^2, direct evaluation.
+%
+% Helmholtz direct evaluation in R^2: evaluate all pairwise particle
+% interactions (ignoring self-interactions) and interactions with targets.
+%
+% h2d: charge and dipstr are complex valued, x \in R^2
+%
+% \phi(x_i) = (ima/4) \sum_{j\ne i}   charge_j H^{(1)}_0(k |x_i-x_j| )
+%             + dipstr_j (dipvec_j \dot \grad_j H^{(1)}_0(k |x_i-x_j| )
+%
+% or, more precisely,
+%
+% \phi(x_i) = (ima/4) \sum_{j\ne i}   charge_j H^{(1)}_0(k |x_i-x_j| )
+% + dipstr_j (dipvec_j \dot (x_i-x_j) ) H^{(1)}_1(k |x_i-x_j|) *k/|x_i-x_j|
+%
+%
+% [U]=H2DPARTDIRECT(ZK,NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC);
+%
+% [U]=H2DPARTDIRECT(ZK,NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC,IFPOT,IFGRAD,IFHESS);
+%
+% [U]=H2DPARTDIRECT(ZK,NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC,IFPOT,IFGRAD,IFHESS,...
+%         NTARGET,TARGET,IFPOTTARG,IFGRADTARG,IFHESSTARG);
+%
+%
+% This subroutine evaluates the Helmholtz potential and gradient due
+% to a collection of charges and dipoles. We use H_0(kr)*(ima/4) for the 
+% Green's function. Self-interactions are not-included.
+%
+% Input parameters:
+% 
+% zk - complex Helmholtz parameter
+% nsource - number of sources
+% source - real (2,nsource): source locations
+% ifcharge - charge computation flag
+%
+%         0 => do not compute
+%         1 => include charge contribution
+% 
+% charge - complex (nsource): charge strengths 
+% ifdipole - dipole computation flag
+%
+%         0 => do not compute
+%         1 => include dipole contributions
+% 
+% dipole - complex (nsource): dipole strengths
+% dipvec - real (2,source): dipole orientation vectors
+%
+% ifpot - potential computation flag, 1 => compute the potential, otherwise no
+% ifgrad - gradient computation flag, 1 => compute the gradient, otherwise no
+% ifhess - hessian computation flag, 1 => compute the hessian, otherwise no
+%
+% ntarget - number of targets
+% target - real (2,ntarget): target locations
+%
+% ifpottarg - target potential computation flag, 
+%      1 => compute the target potential, otherwise no
+% ifgradtarg - target gradient computation flag, 
+%      1 => compute the target gradient, otherwise no
+% ihesstarg - target hessian computation flag 
+%      1 => compute the hessian, otherwise no
+%
+% Output parameters: 
+%
+% U.pot - complex (nsource) - potential at source locations
+% U.grad - complex (2,nsource) - gradient  at source locations
+% U.hess - complex (3,nsource) - hessian at source locations
+% U.pottarg - complex (ntarget) - potential at target locations
+% U.gradtarg - complex (2,ntarget) - gradient  at target locations
+% U.hesstarg - complex (3,ntarget) - hessian at target locations
+%
+% U.ier - error return code
+%
+%             ier=0     =>  normal execution
+%
+
+if( nargin == 8 ) 
+  ifpot = 1;
+  ifgrad = 1;
+  ifhess = 1;
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 11 ) 
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 13 ) 
+  ifpottarg = 1;
+  ifgradtarg = 1;
+  ifhesstarg = 1;
+end
+
+
+ifcharge = double(ifcharge); ifdipole = double(ifdipole);
+ifpot = double(ifpot); ifgrad = double(ifgrad); ifhess = double(ifhess);
+ifpottarg = double(ifpottarg); ifgradtarg = double(ifgradtarg);
+ifhesstarg = double(ifhesstarg);
+
+pot=0;
+grad=zeros(2,1);
+hess=zeros(3,1);
+pottarg=0;
+gradtarg=zeros(2,1);
+hesstarg=zeros(3,1);
+
+if( ifpot == 1 ), pot=zeros(1,nsource)+1i*zeros(1,nsource); end;
+if( ifgrad == 1 ), grad=zeros(2,nsource)+1i*zeros(2,nsource); end;
+if( ifhess == 1 ), hess=zeros(3,nsource)+1i*zeros(3,nsource); end;
+if( ifpottarg == 1 ), pottarg=zeros(1,ntarget)+1i*zeros(1,ntarget); end;
+if( ifgradtarg == 1 ), gradtarg=zeros(2,ntarget)+1i*zeros(2,ntarget); end;
+if( ifhesstarg == 1 ), hesstarg=zeros(3,ntarget)+1i*zeros(3,ntarget); end;
+
+ier=0;
+
+# FORTRAN h2dpartdirect(dcomplex[1] zk, int[1] nsource, double[2,nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double [2,nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
+
+
+if( ifpot == 1 ) U.pot=pot; end
+if( ifgrad == 1 ) U.grad=grad; end
+if( ifhess == 1 ) U.hess=hess; end
+if( ifpottarg == 1 ) U.pottarg=pottarg; end
+if( ifgradtarg == 1 ) U.gradtarg=gradtarg; end
+if( ifhesstarg == 1 ) U.hesstarg=hesstarg; end
+U.ier=ier;
+
+
+
+@function [U]=lfmm2dpart(iprec,nsource,source,ifcharge,charge,ifdipole,dipstr,dipvec,ifpot,ifgrad,ifhess,ntarget,target,ifpottarg,ifgradtarg,ifhesstarg)
+%LFMM2DPART Laplace particle target FMM in R^2 (complex).
+%
+% Laplace FMM in R^2: evaluate all pairwise particle
+% interactions (ignoring self-interactions) and interactions with targets.
+%
+% lfmm2d: charge and dipstr are complex valued, x \in R^2
+%
+% \phi(x_i) = \sum_{j\ne i}   charge_j \log |x_i-x_j|  
+%                    + dipstr_j (dipvec_j \dot \grad_j log|x_i-x_j|)
+%
+% or, more precisely,
+%
+% \phi(x_i) = \sum_{j\ne i}   charge_j \log |x_i-x_j|  
+%                   + dipstr_j (dipvec_j \dot (x_i-x_j)) * (-1/|x_i-x_j|^2)
+%
+%
+% [U]=LFMM2DPART(IPREC,NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC);
+%
+% [U]=LFMM2DPART(IPREC,NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC,IFPOT,IFGRAD,IFHESS);
+%
+% [U]=LFMM2DPART(IPREC,NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC,IFPOT,IFGRAD,IFHESS,...
+%         NTARGET,TARGET,IFPOTTARG,IFGRADTARG,IFHESSTARG);
+%
+%
+% This subroutine evaluates the Laplace potential, gradient and hessian due
+% to a collection of charges and dipoles. We use log(r) for the 
+% Green's function. 
+%
+% Self-interactions are not-included.
+%
+% Input parameters:
+% 
+% iprec - FMM precision flag
+%
+%             -2 => tolerance =.5d0   =>  
+%             -1 => tolerance =.5d-1  =>  1 digit 
+%              0 => tolerance =.5d-2  =>  2 digits
+%              1 => tolerance =.5d-3  =>  3 digits
+%              2 => tolerance =.5d-6  =>  6 digits
+%              3 => tolerance =.5d-9  =>  9 digits
+%              4 => tolerance =.5d-12 => 12 digits
+%              5 => tolerance =.5d-15 => 15 digits
+%
+% nsource - number of sources
+% source - real (2,nsource): source locations
+% ifcharge - charge computation flag
+%
+%         0 => do not compute
+%         1 => include charge contribution
+% 
+% charge - complex (nsource): charge strengths 
+% ifdipole - dipole computation flag
+%
+%         0 => do not compute
+%         1 => include dipole contributions
+% 
+% dipole - complex (nsource): dipole strengths
+% dipvec - real (2,source): dipole orientation vectors
+%
+% ifpot - potential computation flag, 1 => compute the potential, otherwise no
+% ifgrad - gradient computation flag, 1 => compute the gradient, otherwise no
+% ifhess - hessian computation flag, 1 => compute the hessian, otherwise no
+%
+% ntarget - number of targets
+% target - real (2,ntarget): target locations
+%
+% ifpottarg - target potential computation flag, 
+%      1 => compute the target potential, otherwise no
+% ifgradtarg - target gradient computation flag, 
+%      1 => compute the target gradient, otherwise no
+% ihesstarg - target hessian computation flag 
+%      1 => compute the hessian, otherwise no
+%
+% Output parameters: 
+%
+% U.pot - complex (nsource) - potential at source locations
+% U.grad - complex (2,nsource) - gradient  at source locations
+% U.hess - complex (3,nsource) - hessian at source locations
+% U.pottarg - complex (ntarget) - potential at target locations
+% U.gradtarg - complex (2,ntarget) - gradient  at target locations
+% U.hesstarg - complex (3,ntarget) - hessian at target locations
+%
+% U.ier - error return code
+%
+%             ier=0     =>  normal execution
+%             ier=4     =>  cannot allocate tree workspace
+%             ier=8     =>  cannot allocate bulk FMM  workspace
+%             ier=16    =>  cannot allocate mpole expansion workspace in FMM
+%
+
+if( nargin == 9 ) 
+  ifpot = 1;
+  ifgrad = 1;
+  ifhess = 1;
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 11 ) 
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 13 ) 
+  ifpottarg = 1;
+  ifgradtarg = 1;
+  ifhesstarg = 1;
+end
+
+
+ifcharge = double(ifcharge); ifdipole = double(ifdipole);
+ifpot = double(ifpot); ifgrad = double(ifgrad); ifhess = double(ifhess);
+ifpottarg = double(ifpottarg); ifgradtarg = double(ifgradtarg);
+ifhesstarg = double(ifhesstarg);
+
+pot=0;
+grad=zeros(2,1);
+hess=zeros(3,1);
+pottarg=0;
+gradtarg=zeros(2,1);
+hesstarg=zeros(3,1);
+
+if( ifpot == 1 ), pot=zeros(1,nsource)+1i*zeros(1,nsource); end;
+if( ifgrad == 1 ), grad=zeros(2,nsource)+1i*zeros(2,nsource); end;
+if( ifhess == 1 ), hess=zeros(3,nsource)+1i*zeros(3,nsource); end;
+if( ifpottarg == 1 ), pottarg=zeros(1,ntarget)+1i*zeros(1,ntarget); end;
+if( ifgradtarg == 1 ), gradtarg=zeros(2,ntarget)+1i*zeros(2,ntarget); end;
+if( ifhesstarg == 1 ), hesstarg=zeros(3,ntarget)+1i*zeros(3,ntarget); end;
+
+ier=0;
+
+if( ntarget == 0 ) 
+# FORTRAN lfmm2dpartself(inout int[1] ier, int[1] iprec, int[1] nsource, double[2,nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double [2,nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess);
+else
+# FORTRAN lfmm2dparttarg(inout int[1] ier, int[1] iprec, int[1] nsource, double[2,nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double [2,nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
+end
+
+
+if( ifpot == 1 ) U.pot=pot; end
+if( ifgrad == 1 ) U.grad=grad; end
+if( ifhess == 1 ) U.hess=hess; end
+if( ifpottarg == 1 ) U.pottarg=pottarg; end
+if( ifgradtarg == 1 ) U.gradtarg=gradtarg; end
+if( ifhesstarg == 1 ) U.hesstarg=hesstarg; end
+U.ier=ier;
+
+
+
+@function [U]=l2dpartdirect(nsource,source,ifcharge,charge,ifdipole,dipstr,dipvec,ifpot,ifgrad,ifhess,ntarget,target,ifpottarg,ifgradtarg,ifhesstarg)
+%L2DPARTDIRECT Laplace interactions in R^2, direct evaluation (complex).
+%
+% Laplace direct evaluation in R^2: evaluate all pairwise particle
+% interactions (ignoring self-interactions) and interactions with targets.
+%
+% l2d: charge and dipstr are complex valued, x \in R^2
+%
+% \phi(x_i) = \sum_{j\ne i}   charge_j \log |x_i-x_j|  
+%                    + dipstr_j (dipvec_j \dot \grad_j log|x_i-x_j|)
+%
+% or, more precisely,
+%
+% \phi(x_i) = \sum_{j\ne i}   charge_j \log |x_i-x_j|  
+%                   + dipstr_j (dipvec_j \dot (x_i-x_j)) * (-1/|x_i-x_j|^2)
+%
+%
+% [U]=L2DPARTDIRECT(NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC);
+%
+% [U]=L2DPARTDIRECT(NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC,IFPOT,IFGRAD,IFHESS);
+%
+% [U]=L2DPARTDIRECT(NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC,IFPOT,IFGRAD,IFHESS,...
+%         NTARGET,TARGET,IFPOTTARG,IFGRADTARG,IFHESSTARG);
+%
+%
+% This subroutine evaluates the Laplace potential and gradient due
+% to a collection of charges and dipoles. We use log(r) for the 
+% Green's function. Self-interactions are not-included.
+%
+% Input parameters:
+% 
+% nsource - number of sources
+% source - real (2,nsource): source locations
+% ifcharge - charge computation flag
+%
+%         0 => do not compute
+%         1 => include charge contribution
+% 
+% charge - complex (nsource): charge strengths 
+% ifdipole - dipole computation flag
+%
+%         0 => do not compute
+%         1 => include dipole contributions
+% 
+% dipole - complex (nsource): dipole strengths
+% dipvec - real (2,source): dipole orientation vectors
+%
+% ifpot - potential computation flag, 1 => compute the potential, otherwise no
+% ifgrad - gradient computation flag, 1 => compute the gradient, otherwise no
+% ifhess - hessian computation flag, 1 => compute the hessian, otherwise no
+%
+% ntarget - number of targets
+% target - real (2,ntarget): target locations
+%
+% ifpottarg - target potential computation flag, 
+%      1 => compute the target potential, otherwise no
+% ifgradtarg - target gradient computation flag, 
+%      1 => compute the target gradient, otherwise no
+% ihesstarg - target hessian computation flag 
+%      1 => compute the hessian, otherwise no
+%
+% Output parameters: 
+%
+% U.pot - complex (nsource) - potential at source locations
+% U.grad - complex (2,nsource) - gradient  at source locations
+% U.hess - complex (3,nsource) - hessian at source locations
+% U.pottarg - complex (ntarget) - potential at target locations
+% U.gradtarg - complex (2,ntarget) - gradient  at target locations
+% U.hesstarg - complex (3,ntarget) - hessian at target locations
+%
+% U.ier - error return code
+%
+%             ier=0     =>  normal execution
+%
+
+if( nargin == 7 ) 
+  ifpot = 1;
+  ifgrad = 1;
+  ifhess = 1;
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 10 ) 
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 12 ) 
+  ifpottarg = 1;
+  ifgradtarg = 1;
+  ifhesstarg = 1;
+end
+
+
+ifcharge = double(ifcharge); ifdipole = double(ifdipole);
+ifpot = double(ifpot); ifgrad = double(ifgrad); ifhess = double(ifhess);
+ifpottarg = double(ifpottarg); ifgradtarg = double(ifgradtarg);
+ifhesstarg = double(ifhesstarg);
+
+pot=0;
+grad=zeros(2,1);
+hess=zeros(3,1);
+pottarg=0;
+gradtarg=zeros(2,1);
+hesstarg=zeros(3,1);
+
+if( ifpot == 1 ), pot=zeros(1,nsource)+1i*zeros(1,nsource); end;
+if( ifgrad == 1 ), grad=zeros(2,nsource)+1i*zeros(2,nsource); end;
+if( ifhess == 1 ), hess=zeros(3,nsource)+1i*zeros(3,nsource); end;
+if( ifpottarg == 1 ), pottarg=zeros(1,ntarget)+1i*zeros(1,ntarget); end;
+if( ifgradtarg == 1 ), gradtarg=zeros(2,ntarget)+1i*zeros(2,ntarget); end;
+if( ifhesstarg == 1 ), hesstarg=zeros(3,ntarget)+1i*zeros(3,ntarget); end;
+
+ier=0;
+
+# FORTRAN l2dpartdirect(int[1] nsource, double[2,nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double [2,nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
+
+
+if( ifpot == 1 ) U.pot=pot; end
+if( ifgrad == 1 ) U.grad=grad; end
+if( ifhess == 1 ) U.hess=hess; end
+if( ifpottarg == 1 ) U.pottarg=pottarg; end
+if( ifgradtarg == 1 ) U.gradtarg=gradtarg; end
+if( ifhesstarg == 1 ) U.hesstarg=hesstarg; end
+U.ier=ier;
+
+
+@function [U]=zfmm2dpart(iprec,nsource,source,dipstr,ifpot,ifgrad,ifhess,ntarget,target,ifpottarg,ifgradtarg,ifhesstarg)
+%ZFMM2DPART Laplace particle target FMM in R^2 (Cauchy sums).
+%
+% Laplace FMM in R^2: evaluate all pairwise particle
+% interactions (ignoring self-interactions) and interactions with targets.
+%
+% \phi(z_i) = \sum_{j\ne i}  dipstr_j *(1/(z_i-z_j))
+%
+% \gradient \phi(z_i) = \frac{\partial \phi(z_i)}{\partial z}
+% \hessian  \phi(z_i) = \frac{\partial^2 \phi(z_i)}{\partial z^2}
+%
+% where dipstr are complex valued, z are complex numbers.
+%
+%
+% [U]=ZFMM2DPART(IPREC,NSOURCE,SOURCE,DIPSTR);
+%
+% [U]=ZFMM2DPART(IPREC,NSOURCE,SOURCE,DIPSTR,...
+%         IFPOT,IFGRAD,IFHESS);
+%
+% [U]=ZFMM2DPART(IPREC,NSOURCE,SOURCE,DIPSTR,...
+%         IFPOT,IFGRAD,IFHESS,...
+%         NTARGET,TARGET,IFPOTTARG,IFGRADTARG,IFHESSTARG);
+%
+%
+% This subroutine evaluates the Cauchy potential, gradient and hessian due
+% to a collection of dipoles. 
+%
+% Self-interactions are not-included.
+%
+% Input parameters:
+% 
+% iprec - FMM precision flag
+%
+%             -2 => tolerance =.5d0   =>  
+%             -1 => tolerance =.5d-1  =>  1 digit 
+%              0 => tolerance =.5d-2  =>  2 digits
+%              1 => tolerance =.5d-3  =>  3 digits
+%              2 => tolerance =.5d-6  =>  6 digits
+%              3 => tolerance =.5d-9  =>  9 digits
+%              4 => tolerance =.5d-12 => 12 digits
+%              5 => tolerance =.5d-15 => 15 digits
+%
+% nsource - number of sources
+% source - real (2,nsource): source locations
+% dipole - complex (nsource): dipole strengths
+%
+% ifpot - potential computation flag, 1 => compute the potential, otherwise no
+% ifgrad - gradient computation flag, 1 => compute the gradient, otherwise no
+% ifhess - hessian computation flag, 1 => compute the hessian, otherwise no
+%
+% ntarget - number of targets
+% target - real (2,ntarget): target locations
+%
+% ifpottarg - target potential computation flag, 
+%      1 => compute the target potential, otherwise no
+% ifgradtarg - target gradient computation flag, 
+%      1 => compute the target gradient, otherwise no
+% ihesstarg - target hessian computation flag 
+%      1 => compute the hessian, otherwise no
+%
+% Output parameters: 
+%
+% U.pot - complex (nsource) - potential at source locations
+% U.grad - complex (2,nsource) - gradient  at source locations
+% U.hess - complex (3,nsource) - hessian at source locations
+% U.pottarg - complex (ntarget) - potential at target locations
+% U.gradtarg - complex (2,ntarget) - gradient  at target locations
+% U.hesstarg - complex (3,ntarget) - hessian at target locations
+%
+% U.ier - error return code
+%
+%             ier=0     =>  normal execution
+%             ier=4     =>  cannot allocate tree workspace
+%             ier=8     =>  cannot allocate bulk FMM  workspace
+%             ier=16    =>  cannot allocate mpole expansion workspace in FMM
+%
+
+if( nargin == 5 ) 
+  ifpot = 1;
+  ifgrad = 1;
+  ifhess = 1;
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 7 ) 
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 9 ) 
+  ifpottarg = 1;
+  ifgradtarg = 1;
+  ifhesstarg = 1;
+end
+
+
+ifpot = double(ifpot); ifgrad = double(ifgrad); ifhess = double(ifhess);
+ifpottarg = double(ifpottarg); ifgradtarg = double(ifgradtarg);
+ifhesstarg = double(ifhesstarg);
+
+pot=0;
+grad=0;
+hess=0;
+pottarg=0;
+gradtarg=0;
+hesstarg=0;
+
+if( ifpot == 1 ), pot=zeros(1,nsource)+1i*zeros(1,nsource); end;
+if( ifgrad == 1 ), grad=zeros(2,nsource)+1i*zeros(2,nsource); end;
+if( ifhess == 1 ), hess=zeros(3,nsource)+1i*zeros(3,nsource); end;
+if( ifpottarg == 1 ), pottarg=zeros(1,ntarget)+1i*zeros(1,ntarget); end;
+if( ifgradtarg == 1 ), gradtarg=zeros(2,ntarget)+1i*zeros(2,ntarget); end;
+if( ifhesstarg == 1 ), hesstarg=zeros(3,ntarget)+1i*zeros(3,ntarget); end;
+
+ier=0;
+
+if( ntarget == 0 ) 
+# FORTRAN zfmm2dpartself(inout int[1] ier, int[1] iprec, int[1] nsource, double[2,nsource] source, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess);
+else
+# FORTRAN zfmm2dparttarg(inout int[1] ier, int[1] iprec, int[1] nsource, double[2,nsource] source, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
+end
+
+
+if( ifpot == 1 ) U.pot=pot; end
+if( ifgrad == 1 ) U.grad=grad; end
+if( ifhess == 1 ) U.hess=hess; end
+if( ifpottarg == 1 ) U.pottarg=pottarg; end
+if( ifgradtarg == 1 ) U.gradtarg=gradtarg; end
+if( ifhesstarg == 1 ) U.hesstarg=hesstarg; end
+U.ier=ier;
+
+
+@function [U]=z2dpartdirect(nsource,source,dipstr,ifpot,ifgrad,ifhess,ntarget,target,ifpottarg,ifgradtarg,ifhesstarg)
+%Z2DPARTDIRECT Laplace interactions in R^2, direct evaluation (Cauchy sums).
+%
+% Laplace direct evaluation in R^2: evaluate all pairwise particle
+% interactions (ignoring self-interactions) and interactions with targets.
+%
+% \phi(z_i) = \sum_{j\ne i}  dipstr_j *(1/(z_i-z_j))
+%
+% \gradient \phi(z_i) = \frac{\partial \phi(z_i)}{\partial z}
+% \hessian  \phi(z_i) = \frac{\partial^2 \phi(z_i)}{\partial z^2}
+%
+% where charge and dipstr are complex valued, z are complex numbers.
+%
+%
+% [U]=Z2DPARTDIRECT(NSOURCE,SOURCE,DIPSTR);
+%
+% [U]=Z2DPARTDIRECT(NSOURCE,SOURCE,DIPSTR,...
+%         IFPOT,IFGRAD,IFHESS);
+%
+% [U]=Z2DPARTDIRECT(NSOURCE,SOURCE,DIPSTR,...
+%         IFPOT,IFGRAD,IFHESS,...
+%         NTARGET,TARGET,IFPOTTARG,IFGRADTARG,IFHESSTARG);
+%
+%
+% This subroutine evaluates the Cauchy potential and gradient due
+% to a collection of dipoles. Self-interactions are not-included.
+%
+% Input parameters:
+% 
+% nsource - number of sources
+% source - real (2,nsource): source locations
+% dipole - complex (nsource): dipole strengths
+%
+% ifpot - potential computation flag, 1 => compute the potential, otherwise no
+% ifgrad - gradient computation flag, 1 => compute the gradient, otherwise no
+% ifhess - hessian computation flag, 1 => compute the hessian, otherwise no
+%
+% ntarget - number of targets
+% target - real (2,ntarget): target locations
+%
+% ifpottarg - target potential computation flag, 
+%      1 => compute the target potential, otherwise no
+% ifgradtarg - target gradient computation flag, 
+%      1 => compute the target gradient, otherwise no
+% ihesstarg - target hessian computation flag 
+%      1 => compute the hessian, otherwise no
+%
+% Output parameters: 
+%
+% U.pot - complex (nsource) - potential at source locations
+% U.grad - complex (nsource) - gradient  at source locations
+% U.hess - complex (nsource) - hessian at source locations
+% U.pottarg - complex (ntarget) - potential at target locations
+% U.gradtarg - complex (ntarget) - gradient  at target locations
+% U.hesstarg - complex (ntarget) - hessian at target locations
+%
+% U.ier - error return code
+%
+%             ier=0     =>  normal execution
+%
+
+if( nargin == 3 ) 
+  ifpot = 1;
+  ifgrad = 1;
+  ifhess = 1;
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 6 ) 
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 8 ) 
+  ifpottarg = 1;
+  ifgradtarg = 1;
+  ifhesstarg = 1;
+end
+
+
+ifpot = double(ifpot); ifgrad = double(ifgrad); ifhess = double(ifhess);
+ifpottarg = double(ifpottarg); ifgradtarg = double(ifgradtarg);
+ifhesstarg = double(ifhesstarg);
+
+pot=0;
+grad=0;
+hess=0;
+pottarg=0;
+gradtarg=0;
+hesstarg=0;
+
+if( ifpot == 1 ), pot=zeros(1,nsource)+1i*zeros(1,nsource); end;
+if( ifgrad == 1 ), grad=zeros(2,nsource)+1i*zeros(2,nsource); end;
+if( ifhess == 1 ), hess=zeros(3,nsource)+1i*zeros(3,nsource); end;
+if( ifpottarg == 1 ), pottarg=zeros(1,ntarget)+1i*zeros(1,ntarget); end;
+if( ifgradtarg == 1 ), gradtarg=zeros(2,ntarget)+1i*zeros(2,ntarget); end;
+if( ifhesstarg == 1 ), hesstarg=zeros(3,ntarget)+1i*zeros(3,ntarget); end;
+
+ier=0;
+
+# FORTRAN z2dpartdirect(int[1] nsource, double[2,nsource] source, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
+
+
+if( ifpot == 1 ) U.pot=pot; end
+if( ifgrad == 1 ) U.grad=grad; end
+if( ifhess == 1 ) U.hess=hess; end
+if( ifpottarg == 1 ) U.pottarg=pottarg; end
+if( ifgradtarg == 1 ) U.gradtarg=gradtarg; end
+if( ifhesstarg == 1 ) U.hesstarg=hesstarg; end
+U.ier=ier;
+
+
+
+@function [U]=cfmm2dpart(iprec,nsource,source,ifcharge,charge,ifdipole,dipstr,ifpot,ifgrad,ifhess,ntarget,target,ifpottarg,ifgradtarg,ifhesstarg)
+%CFMM2DPART Laplace particle target FMM in R^2 (generalized Cauchy sums).
+%
+% Laplace FMM in R^2: evaluate all pairwise particle
+% interactions (ignoring self-interactions) and interactions with targets.
+%
+% \phi(z_i) = \sum_{j\ne i}   charge_j \log(z_i-z_j)  + dipstr_j *(1/(z_i-z_j))
+%
+% \gradient \phi(z_i) = \frac{\partial \phi(z_i)}{\partial z}
+% \hessian  \phi(z_i) = \frac{\partial^2 \phi(z_i)}{\partial z^2}
+%
+% where charge and dipstr are complex valued, z are complex numbers.
+%
+%
+% [U]=CFMM2DPART(IPREC,NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR);
+%
+% [U]=CFMM2DPART(IPREC,NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,IFPOT,IFGRAD,IFHESS);
+%
+% [U]=CFMM2DPART(IPREC,NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,IFPOT,IFGRAD,IFHESS,...
+%         NTARGET,TARGET,IFPOTTARG,IFGRADTARG,IFHESSTARG);
+%
+%
+% This subroutine evaluates the Laplace potential, gradient and hessian due
+% to a collection of charges and dipoles. We use log(r) for the 
+% Green's function. 
+%
+% Self-interactions are not-included.
+%
+% Input parameters:
+% 
+% iprec - FMM precision flag
+%
+%             -2 => tolerance =.5d0   =>  
+%             -1 => tolerance =.5d-1  =>  1 digit 
+%              0 => tolerance =.5d-2  =>  2 digits
+%              1 => tolerance =.5d-3  =>  3 digits
+%              2 => tolerance =.5d-6  =>  6 digits
+%              3 => tolerance =.5d-9  =>  9 digits
+%              4 => tolerance =.5d-12 => 12 digits
+%              5 => tolerance =.5d-15 => 15 digits
+%
+% nsource - number of sources
+% source - real (2,nsource): source locations
+% ifcharge - charge computation flag
+%
+%         0 => do not compute
+%         1 => include charge contribution
+% 
+% charge - complex (nsource): charge strengths 
+% ifdipole - dipole computation flag
+%
+%         0 => do not compute
+%         1 => include dipole contributions
+% 
+% dipole - complex (nsource): dipole strengths
+%
+% ifpot - potential computation flag, 1 => compute the potential, otherwise no
+% ifgrad - gradient computation flag, 1 => compute the gradient, otherwise no
+% ifhess - hessian computation flag, 1 => compute the hessian, otherwise no
+%
+% ntarget - number of targets
+% target - real (2,ntarget): target locations
+%
+% ifpottarg - target potential computation flag, 
+%      1 => compute the target potential, otherwise no
+% ifgradtarg - target gradient computation flag, 
+%      1 => compute the target gradient, otherwise no
+% ihesstarg - target hessian computation flag 
+%      1 => compute the hessian, otherwise no
+%
+% Output parameters: 
+%
+% U.pot - complex (nsource) - potential at source locations
+% U.grad - complex (2,nsource) - gradient  at source locations
+% U.hess - complex (3,nsource) - hessian at source locations
+% U.pottarg - complex (ntarget) - potential at target locations
+% U.gradtarg - complex (2,ntarget) - gradient  at target locations
+% U.hesstarg - complex (3,ntarget) - hessian at target locations
+%
+% U.ier - error return code
+%
+%             ier=0     =>  normal execution
+%             ier=4     =>  cannot allocate tree workspace
+%             ier=8     =>  cannot allocate bulk FMM  workspace
+%             ier=16    =>  cannot allocate mpole expansion workspace in FMM
+%
+
+if( nargin == 8 ) 
+  ifpot = 1;
+  ifgrad = 1;
+  ifhess = 1;
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 10 ) 
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 12 ) 
+  ifpottarg = 1;
+  ifgradtarg = 1;
+  ifhesstarg = 1;
+end
+
+
+ifcharge = double(ifcharge); ifdipole = double(ifdipole);
+ifpot = double(ifpot); ifgrad = double(ifgrad); ifhess = double(ifhess);
+ifpottarg = double(ifpottarg); ifgradtarg = double(ifgradtarg);
+ifhesstarg = double(ifhesstarg);
+
+pot=0;
+grad=0;
+hess=0;
+pottarg=0;
+gradtarg=0;
+hesstarg=0;
+
+if( ifpot == 1 ), pot=zeros(1,nsource)+1i*zeros(1,nsource); end;
+if( ifgrad == 1 ), grad=zeros(2,nsource)+1i*zeros(2,nsource); end;
+if( ifhess == 1 ), hess=zeros(3,nsource)+1i*zeros(3,nsource); end;
+if( ifpottarg == 1 ), pottarg=zeros(1,ntarget)+1i*zeros(1,ntarget); end;
+if( ifgradtarg == 1 ), gradtarg=zeros(2,ntarget)+1i*zeros(2,ntarget); end;
+if( ifhesstarg == 1 ), hesstarg=zeros(3,ntarget)+1i*zeros(3,ntarget); end;
+
+ier=0;
+
+if( ntarget == 0 ) 
+# FORTRAN cfmm2dpartself(inout int[1] ier, int[1] iprec, int[1] nsource, double[2,nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess);
+else
+# FORTRAN cfmm2dparttarg(inout int[1] ier, int[1] iprec, int[1] nsource, double[2,nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
+end
+
+
+if( ifpot == 1 ) U.pot=pot; end
+if( ifgrad == 1 ) U.grad=grad; end
+if( ifhess == 1 ) U.hess=hess; end
+if( ifpottarg == 1 ) U.pottarg=pottarg; end
+if( ifgradtarg == 1 ) U.gradtarg=gradtarg; end
+if( ifhesstarg == 1 ) U.hesstarg=hesstarg; end
+U.ier=ier;
+
+
+
+@function [U]=c2dpartdirect(nsource,source,ifcharge,charge,ifdipole,dipstr,ifpot,ifgrad,ifhess,ntarget,target,ifpottarg,ifgradtarg,ifhesstarg)
+%C2DPARTDIRECT Laplace interactions in R^2, direct evaluation (g. Cauchy sums).
+%
+% Laplace direct evaluation in R^2: evaluate all pairwise particle
+% interactions (ignoring self-interactions) and interactions with targets.
+%
+% \phi(z_i) = \sum_{j\ne i}   charge_j \log(z_i-z_j)  + dipstr_j *(1/(z_i-z_j))
+%
+% \gradient \phi(z_i) = \frac{\partial \phi(z_i)}{\partial z}
+% \hessian  \phi(z_i) = \frac{\partial^2 \phi(z_i)}{\partial z^2}
+%
+% where charge and dipstr are complex valued, z are complex numbers.
+%
+%
+% [U]=C2DPARTDIRECT(NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR);
+%
+% [U]=C2DPARTDIRECT(NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,IFPOT,IFGRAD,IFHESS);
+%
+% [U]=C2DPARTDIRECT(NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,IFPOT,IFGRAD,IFHESS,...
+%         NTARGET,TARGET,IFPOTTARG,IFGRADTARG,IFHESSTARG);
+%
+%
+% This subroutine evaluates the Laplace potential and gradient due
+% to a collection of charges and dipoles. We use log(r) for the 
+% Green's function. Self-interactions are not-included.
+%
+% Input parameters:
+% 
+% nsource - number of sources
+% source - real (2,nsource): source locations
+% ifcharge - charge computation flag
+%
+%         0 => do not compute
+%         1 => include charge contribution
+% 
+% charge - complex (nsource): charge strengths 
+% ifdipole - dipole computation flag
+%
+%         0 => do not compute
+%         1 => include dipole contributions
+% 
+% dipole - complex (nsource): dipole strengths
+%
+% ifpot - potential computation flag, 1 => compute the potential, otherwise no
+% ifgrad - gradient computation flag, 1 => compute the gradient, otherwise no
+% ifhess - hessian computation flag, 1 => compute the hessian, otherwise no
+%
+% ntarget - number of targets
+% target - real (2,ntarget): target locations
+%
+% ifpottarg - target potential computation flag, 
+%      1 => compute the target potential, otherwise no
+% ifgradtarg - target gradient computation flag, 
+%      1 => compute the target gradient, otherwise no
+% ihesstarg - target hessian computation flag 
+%      1 => compute the hessian, otherwise no
+%
+% Output parameters: 
+%
+% U.pot - complex (nsource) - potential at source locations
+% U.grad - complex (nsource) - gradient  at source locations
+% U.hess - complex (nsource) - hessian at source locations
+% U.pottarg - complex (ntarget) - potential at target locations
+% U.gradtarg - complex (ntarget) - gradient  at target locations
+% U.hesstarg - complex (ntarget) - hessian at target locations
+%
+% U.ier - error return code
+%
+%             ier=0     =>  normal execution
+%
+
+if( nargin == 6 ) 
+  ifpot = 1;
+  ifgrad = 1;
+  ifhess = 1;
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 9 ) 
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 11 ) 
+  ifpottarg = 1;
+  ifgradtarg = 1;
+  ifhesstarg = 1;
+end
+
+
+ifcharge = double(ifcharge); ifdipole = double(ifdipole);
+ifpot = double(ifpot); ifgrad = double(ifgrad); ifhess = double(ifhess);
+ifpottarg = double(ifpottarg); ifgradtarg = double(ifgradtarg);
+ifhesstarg = double(ifhesstarg);
+
+pot=0;
+grad=0;
+hess=0;
+pottarg=0;
+gradtarg=0;
+hesstarg=0;
+
+if( ifpot == 1 ), pot=zeros(1,nsource)+1i*zeros(1,nsource); end;
+if( ifgrad == 1 ), grad=zeros(2,nsource)+1i*zeros(2,nsource); end;
+if( ifhess == 1 ), hess=zeros(3,nsource)+1i*zeros(3,nsource); end;
+if( ifpottarg == 1 ), pottarg=zeros(1,ntarget)+1i*zeros(1,ntarget); end;
+if( ifgradtarg == 1 ), gradtarg=zeros(2,ntarget)+1i*zeros(2,ntarget); end;
+if( ifhesstarg == 1 ), hesstarg=zeros(3,ntarget)+1i*zeros(3,ntarget); end;
+
+ier=0;
+
+# FORTRAN c2dpartdirect(int[1] nsource, double[2,nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
+
+
+if( ifpot == 1 ) U.pot=pot; end
+if( ifgrad == 1 ) U.grad=grad; end
+if( ifhess == 1 ) U.hess=hess; end
+if( ifpottarg == 1 ) U.pottarg=pottarg; end
+if( ifgradtarg == 1 ) U.gradtarg=gradtarg; end
+if( ifhesstarg == 1 ) U.hesstarg=hesstarg; end
+U.ier=ier;
+
+
+
+@function [U]=rfmm2dpart(iprec,nsource,source,ifcharge,charge,ifdipole,dipstr,dipvec,ifpot,ifgrad,ifhess,ntarget,target,ifpottarg,ifgradtarg,ifhesstarg)
+%RFMM2DPART Laplace particle target FMM in R^2 (real).
+%
+% Laplace FMM in R^2: evaluate all pairwise particle
+% interactions (ignoring self-interactions) and interactions with targets.
+%
+% rfmm2d: charge and dipstr are real valued, x \in R^2
+%
+% \phi(x_i) = \sum_{j\ne i}   charge_j \log |x_i-x_j|  
+%                    + dipstr_j (dipvec_j \dot \grad_j log|x_i-x_j|)
+%
+% or, more precisely,
+%
+% \phi(x_i) = \sum_{j\ne i}   charge_j \log |x_i-x_j|  
+%                   + dipstr_j (dipvec_j \dot (x_i-x_j)) * (-1/|x_i-x_j|^2)
+%
+%
+% [U]=RFMM2DPART(IPREC,NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC);
+%
+% [U]=RFMM2DPART(IPREC,NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC,IFPOT,IFGRAD,IFHESS);
+%
+% [U]=RFMM2DPART(IPREC,NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC,IFPOT,IFGRAD,IFHESS,...
+%         NTARGET,TARGET,IFPOTTARG,IFGRADTARG,IFHESSTARG);
+%
+%
+% This subroutine evaluates the Laplace potential, gradient and hessian due
+% to a collection of charges and dipoles. We use log(r) for the 
+% Green's function. 
+%
+% Self-interactions are not-included.
+%
+% Input parameters:
+% 
+% iprec - FMM precision flag
+%
+%             -2 => tolerance =.5d0   =>  
+%             -1 => tolerance =.5d-1  =>  1 digit 
+%              0 => tolerance =.5d-2  =>  2 digits
+%              1 => tolerance =.5d-3  =>  3 digits
+%              2 => tolerance =.5d-6  =>  6 digits
+%              3 => tolerance =.5d-9  =>  9 digits
+%              4 => tolerance =.5d-12 => 12 digits
+%              5 => tolerance =.5d-15 => 15 digits
+%
+% nsource - number of sources
+% source - real (2,nsource): source locations
+% ifcharge - charge computation flag
+%
+%         0 => do not compute
+%         1 => include charge contribution
+% 
+% charge - real (nsource): charge strengths 
+% ifdipole - dipole computation flag
+%
+%         0 => do not compute
+%         1 => include dipole contributions
+% 
+% dipole - real (nsource): dipole strengths
+% dipvec - real (2,source): dipole orientation vectors
+%
+% ifpot - potential computation flag, 1 => compute the potential, otherwise no
+% ifgrad - gradient computation flag, 1 => compute the gradient, otherwise no
+% ifhess - hessian computation flag, 1 => compute the hessian, otherwise no
+%
+% ntarget - number of targets
+% target - real (2,ntarget): target locations
+%
+% ifpottarg - target potential computation flag, 
+%      1 => compute the target potential, otherwise no
+% ifgradtarg - target gradient computation flag, 
+%      1 => compute the target gradient, otherwise no
+% ihesstarg - target hessian computation flag 
+%      1 => compute the hessian, otherwise no
+%
+% Output parameters: 
+%
+% U.pot - real (nsource) - potential at source locations
+% U.grad - real (2,nsource) - gradient  at source locations
+% U.hess - real (3,nsource) - hessian at source locations
+% U.pottarg - real (ntarget) - potential at target locations
+% U.gradtarg - real (2,ntarget) - gradient  at target locations
+% U.hesstarg - real (3,ntarget) - hessian at target locations
+%
+% U.ier - error return code
+%
+%             ier=0     =>  normal execution
+%             ier=4     =>  cannot allocate tree workspace
+%             ier=8     =>  cannot allocate bulk FMM  workspace
+%             ier=16    =>  cannot allocate mpole expansion workspace in FMM
+%
+
+if( nargin == 9 ) 
+  ifpot = 1;
+  ifgrad = 1;
+  ifhess = 1;
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 11 ) 
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 13 ) 
+  ifpottarg = 1;
+  ifgradtarg = 1;
+  ifhesstarg = 1;
+end
+
+
+ifcharge = double(ifcharge); ifdipole = double(ifdipole);
+ifpot = double(ifpot); ifgrad = double(ifgrad); ifhess = double(ifhess);
+ifpottarg = double(ifpottarg); ifgradtarg = double(ifgradtarg);
+ifhesstarg = double(ifhesstarg);
+
+pot=0;
+grad=zeros(2,1);
+hess=zeros(3,1);
+pottarg=0;
+gradtarg=zeros(2,1);
+hesstarg=zeros(3,1);
+
+if( ifpot == 1 ), pot=zeros(1,nsource); end;
+if( ifgrad == 1 ), grad=zeros(2,nsource); end;
+if( ifhess == 1 ), hess=zeros(3,nsource); end;
+if( ifpottarg == 1 ), pottarg=zeros(1,ntarget); end;
+if( ifgradtarg == 1 ), gradtarg=zeros(2,ntarget); end;
+if( ifhesstarg == 1 ), hesstarg=zeros(3,ntarget); end;
+
+ier=0;
+
+if( ntarget == 0 ) 
+# FORTRAN rfmm2dpartself(inout int[1] ier, int[1] iprec, int[1] nsource, double[2,nsource] source, int[1] ifcharge, double[] charge, int[1] ifdipole, double[] dipstr, double [2,nsource] dipvec, int[1] ifpot, inout double[] pot, int[1] ifgrad, inout double[] grad, int[1] ifhess, inout double[] hess);
+else
+# FORTRAN rfmm2dparttarg(inout int[1] ier, int[1] iprec, int[1] nsource, double[2,nsource] source, int[1] ifcharge, double[] charge, int[1] ifdipole, double[] dipstr, double [2,nsource] dipvec, int[1] ifpot, inout double[] pot, int[1] ifgrad, inout double[] grad, int[1] ifhess, inout double[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout double[] pottarg, int[1] ifgradtarg, inout double[] gradtarg, int[1] ifhesstarg, inout double[] hesstarg);
+end
+
+
+if( ifpot == 1 ) U.pot=pot; end
+if( ifgrad == 1 ) U.grad=grad; end
+if( ifhess == 1 ) U.hess=hess; end
+if( ifpottarg == 1 ) U.pottarg=pottarg; end
+if( ifgradtarg == 1 ) U.gradtarg=gradtarg; end
+if( ifhesstarg == 1 ) U.hesstarg=hesstarg; end
+U.ier=ier;
+
+
+
+@function [U]=r2dpartdirect(nsource,source,ifcharge,charge,ifdipole,dipstr,dipvec,ifpot,ifgrad,ifhess,ntarget,target,ifpottarg,ifgradtarg,ifhesstarg)
+%R2DPARTDIRECT Laplace interactions in R^2, direct evaluation (real).
+%
+% Laplace direct evaluation in R^2: evaluate all pairwise particle
+% interactions (ignoring self-interactions) and interactions with targets.
+%
+% r2d: charge and dipstr are real valued, x \in R^2
+%
+% \phi(x_i) = \sum_{j\ne i}   charge_j \log |x_i-x_j|  
+%                    + dipstr_j (dipvec_j \dot \grad_j log|x_i-x_j|)
+%
+% or, more precisely,
+%
+% \phi(x_i) = \sum_{j\ne i}   charge_j \log |x_i-x_j|  
+%                   + dipstr_j (dipvec_j \dot (x_i-x_j)) * (-1/|x_i-x_j|^2)
+%
+%
+% [U]=R2DPARTDIRECT(NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC);
+%
+% [U]=R2DPARTDIRECT(NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC,IFPOT,IFGRAD,IFHESS);
+%
+% [U]=R2DPARTDIRECT(NSOURCE,SOURCE,...
+%         IFCHARGE,CHARGE,IFDIPOLE,DIPSTR,DIPVEC,IFPOT,IFGRAD,IFHESS,...
+%         NTARGET,TARGET,IFPOTTARG,IFGRADTARG,IFHESSTARG);
+%
+%
+% This subroutine evaluates the Laplace potential and gradient due
+% to a collection of charges and dipoles. We use log(r) for the 
+% Green's function. Self-interactions are not-included.
+%
+% Input parameters:
+% 
+% nsource - number of sources
+% source - real (2,nsource): source locations
+% ifcharge - charge computation flag
+%
+%         0 => do not compute
+%         1 => include charge contribution
+% 
+% charge - real (nsource): charge strengths 
+% ifdipole - dipole computation flag
+%
+%         0 => do not compute
+%         1 => include dipole contributions
+% 
+% dipole - real (nsource): dipole strengths
+% dipvec - real (2,source): dipole orientation vectors
+%
+% ifpot - potential computation flag, 1 => compute the potential, otherwise no
+% ifgrad - gradient computation flag, 1 => compute the gradient, otherwise no
+% ifhess - hessian computation flag, 1 => compute the hessian, otherwise no
+%
+% ntarget - number of targets
+% target - real (2,ntarget): target locations
+%
+% ifpottarg - target potential computation flag, 
+%      1 => compute the target potential, otherwise no
+% ifgradtarg - target gradient computation flag, 
+%      1 => compute the target gradient, otherwise no
+% ihesstarg - target hessian computation flag 
+%      1 => compute the hessian, otherwise no
+%
+% Output parameters: 
+%
+% U.pot - real (nsource) - potential at source locations
+% U.grad - real (2,nsource) - gradient  at source locations
+% U.hess - real (3,nsource) - hessian at source locations
+% U.pottarg - real (ntarget) - potential at target locations
+% U.gradtarg - real (2,ntarget) - gradient  at target locations
+% U.hesstarg - real (3,ntarget) - hessian at target locations
+%
+% U.ier - error return code
+%
+%             ier=0     =>  normal execution
+%
+
+if( nargin == 7 ) 
+  ifpot = 1;
+  ifgrad = 1;
+  ifhess = 1;
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 10 ) 
+  ntarget = 0;
+  target = zeros(2,1);
+  ifpottarg = 0;
+  ifgradtarg = 0;
+  ifhesstarg = 0;
+end
+
+if( nargin == 12 ) 
+  ifpottarg = 1;
+  ifgradtarg = 1;
+  ifhesstarg = 1;
+end
+
+
+ifcharge = double(ifcharge); ifdipole = double(ifdipole);
+ifpot = double(ifpot); ifgrad = double(ifgrad); ifhess = double(ifhess);
+ifpottarg = double(ifpottarg); ifgradtarg = double(ifgradtarg);
+ifhesstarg = double(ifhesstarg);
+
+pot=0;
+grad=zeros(2,1);
+hess=zeros(3,1);
+pottarg=0;
+gradtarg=zeros(2,1);
+hesstarg=zeros(3,1);
+
+if( ifpot == 1 ), pot=zeros(1,nsource); end;
+if( ifgrad == 1 ), grad=zeros(2,nsource); end;
+if( ifhess == 1 ), hess=zeros(3,nsource); end;
+if( ifpottarg == 1 ), pottarg=zeros(1,ntarget); end;
+if( ifgradtarg == 1 ), gradtarg=zeros(2,ntarget); end;
+if( ifhesstarg == 1 ), hesstarg=zeros(3,ntarget); end;
+
+ier=0;
+
+# FORTRAN r2dpartdirect(int[1] nsource, double[2,nsource] source, int[1] ifcharge, double[] charge, int[1] ifdipole, double[] dipstr, double [2,nsource] dipvec, int[1] ifpot, inout double[] pot, int[1] ifgrad, inout double[] grad, int[1] ifhess, inout double[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout double[] pottarg, int[1] ifgradtarg, inout double[] gradtarg, int[1] ifhesstarg, inout double[] hesstarg);
+
+
+if( ifpot == 1 ) U.pot=pot; end
+if( ifgrad == 1 ) U.grad=grad; end
+if( ifhess == 1 ) U.hess=hess; end
+if( ifpottarg == 1 ) U.pottarg=pottarg; end
+if( ifgradtarg == 1 ) U.gradtarg=gradtarg; end
+if( ifhesstarg == 1 ) U.hesstarg=hesstarg; end
+U.ier=ier;
+
+
+
+@function fmm2dprini(unit1,unit2)
+%FMM2DPRINI Initialize internal printing routines.
+%
+% Calling FMM2DPRINI(6,13) causes printing to screen and file fort.13.     
+%
+
+if (nargin == 1 )
+unit2=0;
+end
+
+# FORTRAN prini(int[1] unit1, int[1] unit2);
+
+
+@function [U]=d2tstrcr(nsource,source,nbox,ntarget,target)
+%D2TSTRCR Construct the logical structure for a fully adaptive FMM in R^2.
+%
+%  [U]=D2TSTRCR(NSOURCE,SOURCE,NBOX);
+%
+%  [U]=D2TSTRCR(NSOURCE,SOURCE,NBOX,NTARGET,TARGET);
+%
+%  This subroutine constructs the logical structure for the 
+%  fully adaptive FMM in two dimensions and stores it in the
+%  structure U.  It is capable of constructing the quad-tree on 
+%  both sources and targets.
+%
+%  After that, the user can obtain the information about various boxes 
+%  and lists in it by calling D2TGETB, D2TGETL.
+%
+%  Input parameters:
+%  
+%  nsource - number of sources
+%  source - real (2,nsource) - source locations
+%  nbox - maximum number of points in a box on the finest level
+%  ntarget - number of targets
+%  target - real (2,ntarget) - target locations
+%
+%  Output parameters:
+%
+%  U.nboxes - the number of boxes created
+%  U.isource - the integer array, addressing the particles in boxes
+%       Explanation: for a box ibox, the particles living in it are:
+%         (source(1,j),source(2,j)),
+%         (source(1,j+1),source(2,j+1)),
+%         (source(1,j+2),source(2,j+2)), ... 
+%         (source(1,j+nj-1),source(2,j+nj-1)),
+%         (source(1,j+nj),source(2,j+nj)),
+%         with j=boxes(9,ibox), and nj=boxes(10,ibox)
+%  U.nlev - the maximum level number on which any boxes have been created
+%  U.laddr - an integer array dimensioned (2,nlev), describing the
+%         numbers of boxes on various levels of sybdivision, so that
+%         the first box on level (i-1) has sequence number laddr(1,i),
+%         and there are laddr(2,i) boxes on level i-1
+%  U.center - the center of the box on the level 0, 
+%             containing the whole simulation
+%  U.size - the side of the box on the level 0
+%  U.lists -  the array containing all tables describing boxes, lists, etc. 
+%         it is a link-list (for the most part), and can only be accessed
+%         via the entries D2TGETB, D2TGETL.
+%  U.itarget - the integer array, addressing the target particles in boxes
+%       Explanation: for a box ibox, the targets living in it are:
+%         (target(1,j),target(2,j)),
+%         (target(1,j+1),target(2,j+1)),
+%         (target(1,j+2),target(2,j+2)), ... 
+%         (target(1,j+nj-1),target(2,j+nj-1)),
+%         (target(1,j+nj),target(2,j+nj)),
+%         with j=boxes(14,ibox), and nj=boxes(15,ibox)
+%  U.lused - the amount of workspace used for storing U.lists
+%
+%  U.lw - the amount of workspace used for creating U.lists
+%  U.ier - error return code
+%    ier=0  - successful execution.
+%    ier=32 - the amount lw of space in array w is insufficient.
+%    ier=16 - the subroutine attempted to construct more 
+%        than 199 levels of subdivision; indicates bad trouble.
+%    ier=64 - the amount lw of space in array w is severely insufficient.
+%
+
+if( nargin == 3 )
+  ntarget = 0;
+  target = zeros(2,1);
+  itarget = zeros(1,1);
+end
+
+isource = zeros(1,nsource);
+if( ntarget > 0 ) itarget = zeros(1,ntarget); end
+
+nlev = 0;
+nboxes = 0;
+laddr = zeros(2,400);
+
+center = zeros(2,1);
+size = 0;
+
+lw = 100*(nsource+ntarget)+10000;
+for i=1:10
+
+w = zeros(1,lw);
+lused=0;
+
+ier = 0;
+
+# FORTRAN d2tstrcr(inout int[1] ier,double[] source,int[1] nsource,inout int[1] nbox,inout int[1] nboxes,inout int[] isource,inout int[] laddr,inout int[1] nlev,inout double[] center,inout double[] size,double[] target,int[1] ntarget,inout int[] itarget,inout double[] w,int[1] lw,inout int[1] lused);
+
+if( ier > 0 ) 
+% increase memory allocation
+  lw = lw*1.5;
+else
+  break;
+end
+
+end
+
+U.nbox = nbox;
+
+U.nboxes = nboxes;
+U.nlev = nlev;
+U.laddr = laddr;
+U.center = center;
+U.size = size;
+
+if( ier == 0 ) U.lists = w(1,1:lused); end
+
+U.isource = isource;
+if( ntarget > 0 ) U.itarget = itarget; end
+
+U.lw = lw;
+U.lused = lused;
+U.ier=ier;
+
+
+@function [U]=d2tstrcrem(nsource,source,nbox,ifempty,minlev,maxlev,ntarget,target)
+%D2TSTRCREM See D2TSTRCR, include empty boxes, min and max level restriction.
+%
+%  [U]=D2TSTRCREM(NSOURCE,SOURCE,NBOX);
+%
+%  [U]=D2TSTRCREM(NSOURCE,SOURCE,NBOX,IFEMPTY,MINLEV,MAXLEV);
+%
+%  [U]=D2TSTRCREM(NSOURCE,SOURCE,NBOX,IFEMPTY,MINLEV,MAXLEV,NTARGET,TARGET);
+%
+%  This subroutine constructs the logical structure for the 
+%  fully adaptive FMM in two dimensions and stores it in the
+%  structure U.  It is capable of constructing the quad-tree on 
+%  both sources and targets. 
+%
+%  After that, the user can obtain the information about various boxes 
+%  and lists in it by calling D2TGETB, D2TGETL.
+%
+%  Input parameters:
+%  
+%  nsource - number of sources
+%  source - real (2,nsource) - source locations
+%  nbox - maximum number of points in a box on the finest level
+%  ntarget - number of targets
+%  target - real (2,ntarget) - target locations
+%
+%  ifempty - ifempty=0 - remove empty boxes, ifempty=1 - keep empty boxes 
+%  minlevel - minimum level of refinement
+%  maxlevel - minimum level of refinement
+%
+%  Output parameters:
+%
+%  U.nboxes - the number of boxes created
+%  U.isource - the integer array, addressing the particles in boxes
+%       Explanation: for a box ibox, the particles living in it are:
+%         (source(1,j),source(2,j)),
+%         (source(1,j+1),source(2,j+1)),
+%         (source(1,j+2),source(2,j+2)), ... 
+%         (source(1,j+nj-1),source(2,j+nj-1)),
+%         (source(1,j+nj),source(2,j+nj)),
+%         with j=boxes(9,ibox), and nj=boxes(10,ibox)
+%  U.nlev - the maximum level number on which any boxes have been created
+%  U.laddr - an integer array dimensioned (2,nlev), describing the
+%         numbers of boxes on various levels of sybdivision, so that
+%         the first box on level (i-1) has sequence number laddr(1,i),
+%         and there are laddr(2,i) boxes on level i-1
+%  U.center - the center of the box on the level 0, 
+%             containing the whole simulation
+%  U.size - the side of the box on the level 0
+%  U.lists -  the array containing all tables describing boxes, lists, etc. 
+%         it is a link-list (for the most part), and can only be accessed
+%         via the entries D2TGETB, D2TGETL.
+%  U.itarget - the integer array, addressing the target particles in boxes
+%       Explanation: for a box ibox, the targets living in it are:
+%         (target(1,j),target(2,j)),
+%         (target(1,j+1),target(2,j+1)),
+%         (target(1,j+2),target(2,j+2)), ... 
+%         (target(1,j+nj-1),target(2,j+nj-1)),
+%         (target(1,j+nj),target(2,j+nj)),
+%         with j=boxes(14,ibox), and nj=boxes(15,ibox)
+%  U.lused - the amount of workspace used for storing U.lists
+%
+%  U.lw - the amount of workspace used for creating U.lists
+%  U.ier - error return code
+%    ier=0  - successful execution.
+%    ier=32 - the amount lw of space in array w is insufficient.
+%    ier=16 - the subroutine attempted to construct more 
+%        than 199 levels of subdivision; indicates bad trouble.
+%    ier=64 - the amount lw of space in array w is severely insufficient.
+%
+
+if( nargin == 3 )
+  ifempty = 0;
+  minlev = 0;
+  maxlev = 200;
+  ntarget = 0;
+  target = zeros(2,1);
+  itarget = zeros(1,1);
+end
+
+if( nargin == 6 )
+  ntarget = 0;
+  target = zeros(2,1);
+  itarget = zeros(1,1);
+end
+
+
+isource = zeros(1,nsource);
+if( ntarget > 0 ) itarget = zeros(1,ntarget); end
+
+nlev = 0;
+nboxes = 0;
+laddr = zeros(2,400);
+
+center = zeros(2,1);
+size = 0;
+
+lw = 100*(nsource+ntarget)+10000;
+for i=1:10
+
+w = zeros(1,lw);
+lused=0;
+
+ier = 0;
+
+# FORTRAN d2tstrcrem(inout int[1] ier,double[] source,int[1] nsource,inout int[1] nbox,inout int[1] nboxes,inout int[] isource,inout int[] laddr,inout int[1] nlev,inout double[] center,inout double[] size,double[] target,int[1] ntarget,inout int[] itarget,inout double[] w,int[1] lw,inout int[1] lused, int[1] ifempty, int[1] minvel, int[1] maxlev);
+
+if( ier > 0 ) 
+% increase memory allocation
+  lw = lw*1.5;
+else
+  break;
+end
+
+end
+
+
+U.nbox = nbox;
+U.ifempty = ifempty;
+U.minlev = minlev;
+U.maxlev = maxlev;
+
+U.nboxes = nboxes;
+U.nlev = nlev;
+U.laddr = laddr;
+U.center = center;
+U.size = size;
+
+if( ier == 0 ) U.lists = w(1,1:lused); end
+
+U.isource = isource;
+if( ntarget > 0 ) U.itarget = itarget; end
+
+U.lw = lw;
+U.lused = lused;
+U.ier=ier;
+
+
+
+@function [ier,box,center,corners]=d2tgetb(ibox,lists)
+%D2TGETB Retrieve box information.
+%
+% [IER,BOX,CENTER,CORNERS]=D2TGETB(IBOX,LISTS);
+%
+% Input parameters:
+%
+% ibox - the box number for which the information is desired
+% lists - storage area U.lists as created be D2TSTRCR or D2TSTRCREM
+%
+% Output parameters:
+%
+% ier - error return code
+%    ier=0 - successful execution
+%    ier=4 - ibox is either greater than the number of boxes 
+%            in the structure or less than 1.
+%
+% box - an integer array dimensioned box(15). its elements describe 
+%        the box number ibox, as follows:
+%
+%       1. level - the level of subdivision on which this box 
+%             was constructed; 
+%       2, 3  - the coordinates of this box among  all
+%             boxes on this level
+%       4 - the daddy of this box, identified by it address
+%             in array boxes
+%       5,6,7,8 - the  list of children of this box 
+%             (eight of them, and the child is identified by its address
+%             in the array boxes; if a box has only one child, only the
+%             first of the four child entries is non-zero, etc.)
+%       9 - the location in the array iz of the particles 
+%             living in this box
+%       10 - the number of particles living in this box
+%       11 - the location in the array iztarg of the targets
+%             living in this box
+%       12 - the number of targets living in this box
+%       13 - source box type: 0 - empty, 1 - leaf node, 2 - sub-divided
+%       14 - target box type: 0 - empty, 1 - leaf node, 2 - sub-divided
+%       15 - reserved for future use
+%
+% center - real (2) - the center of the box number ibox 
+% corners - real (2,4) - the corners of the box number ibox 
+%
+
+ier = 0;
+center = zeros(2,1);
+corners = zeros(2,4);
+box = zeros(1,15);
+
+# FORTRAN d2tgetb(inout int[1] ier,int[1] ibox,inout int[] box,inout double[] center,inout double[] corners,double[] lists);
+
+
+
+@function [ier,list,nlist]=d2tgetl(ibox,itype,lists)
+%D2TGETL Retrieve list information.
+%
+% [IER,LIST,NLIST]=D2TGETL(IBOX,ITYPE,LISTS);
+%
+% Input parameters:
+%
+% ibox - the box number for which the information is desired
+% itype - the type of the desired list for the box ibox
+% lists - storage area U.lists as created be D2TSTRCR or D2TSTRCREM
+%
+% Output parameters:
+%
+% ier - the error return code.
+%    ier=0 - successful execution
+%    ier=4 - the list  itype  for the box  ibox  is empty
+% list - the list  itype  for the box  ibox 
+% nlist - the number of elements in array  list
+%
+
+ier = 0;
+list = zeros(1,10000);
+nlist = 0;
+
+# FORTRAN d2tgetl(inout int[1] ier,int[1] ibox,int[1] itype,inout int[] list,inout int[] nlist,double[] lists);
+
+if( ier == 0 ) list = list(1,1:nlist); end
+if( ier  > 0 ) list = list(1,1); end
+

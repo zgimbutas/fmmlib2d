@@ -1,0 +1,5 @@
+*.o
+*.int
+fort.*
+*~
+octave-core

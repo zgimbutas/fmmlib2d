@@ -1,0 +1,143 @@
+
+Helmholtz particle FMMs in R^2.
+===============================
+
+hfmm2d: charge and dipstr are complex valued, x \in R^2
+
+\phi(x_i) = (ima/4) \sum_{j\ne i}   charge_j H^{(1)}_0(k |x_i-x_j| )
+            + dipstr_j (dipvec_j \dot \grad_j H^{(1)}_0(k |x_i-x_j| )
+
+or, more precisely,
+
+\phi(x_i) = (ima/4) \sum_{j\ne i}   charge_j H^{(1)}_0(k |x_i-x_j| )
++ dipstr_j (dipvec_j \dot (x_i-x_j) ) H^{(1)}_1(k |x_i-x_j|) *k/|x_i-x_j|
+
+
+Laplace particle FMMs in R^2.
+=============================
+
+lfmm2d: charge and dipstr are complex valued, x \in R^2
+
+\phi(x_i) = \sum_{j\ne i}   charge_j \log |x_i-x_j|  
+                   + dipstr_j (dipvec_j \dot \grad_j log|x_i-x_j|)
+
+or, more precisely, 
+
+\phi(x_i) = \sum_{j\ne i}   charge_j \log |x_i-x_j|  
+                   + dipstr_j (dipvec_j \dot (x_i-x_j)) * (-1/|x_i-x_j|^2)
+
+
+rfmm2d: charge and dipstr are real valued, x \in R^2
+
+\phi(x_i) = \sum_{j\ne i}   charge_j \log |x_i-x_j| 
+                   + dipstr_j (dipvec_j \dot \grad_j log|x_i-x_j|)
+
+or, more precisely,
+
+\phi(x_i) = \sum_{j\ne i}   charge_j \log |x_i-x_j|  
+                   + dipstr_j (dipvec_j \dot (x_i-x_j)) * (-1/|x_i-x_j|^2)
+
+
+cfmm2d: charge and dipstr are complex valued, z are complex numbers.
+
+       Note, that the complex valued logarithm is a multi-valued
+       function, so the potential values have to be interpreted
+       carefully, if charges are specified.  For example, only the
+       real part of potential is meaningful for real valued charges.
+       The gradients and hessians are valid for arbitrary complex charges.
+
+\phi(z_i) = \sum_{j\ne i} charge_j \log(z_i-z_j) + dipstr_j \frac{1}{z_i-z_j}
+
+       In this routine, we define the gradient as the first
+       derivative with respect to z, and the hessian as the second
+       derivative with respect to z.
+
+\gradient \phi(z_i) = \frac{\partial \phi(z_i)}{\partial z}
+\hessian  \phi(z_i) = \frac{\partial^2 \phi(z_i)}{\partial z^2}
+
+
+
+Warning, the direct evaluation routines are different for cfmm2d,
+rfmm2d and lfmm2d, respectively.
+
+cfmm2d - cpotgrad2d_sdp  - cfmm2dpart.f
+
+rfmm2d - rpotgrad2d_sdp  - rfmm2dpart.f
+
+lfmm2d - rcpotgrad2d_sdp - lfmm2dpart.f
+
+
+The lfmm2d is the closest analog for hfmm2d, i.e. it implements
+complex valued charges and dipoles. rfmm2d is the real version of
+lfmm2d, it is slightly faster (2x) but can handle only real valued charges
+and dipoles. cfmm2d does the Cauchy type sums of complex valued
+charges and dipoles - dipole vectors have no meaning in cfmm2d.
+
+Both rfmm2d and lfmm2d will internally form real charges and complex
+dipoles (lfmm2d does it twice), after that the actual work is
+performed by cfmm2d.
+
+
+==============================================================================
+
+Sign conventions for Helmholtz and Laplace potentials:
+
+> f := HankelH1(0,k*r);
+                                            2    2 1/2
+                       f := HankelH1(0, k (x  + y )   )
+
+> diff(f,x);           
+                                         2    2 1/2
+                         HankelH1(1, k (x  + y )   ) k x
+                       - -------------------------------
+                                    2    2 1/2
+                                  (x  + y )
+
+> f := log(r);         
+                                          2    2
+                             f := 1/2 ln(x  + y )
+
+> diff(f,x);           
+                                       x
+                                    -------
+                                     2    2
+                                    x  + y
+
+Helmholtz dipole potential:
+
+   (dipvec(1)*xdiff+dipvec(2)*ydiff) * (h1*wavek/r) * (ima/4)
+
+Laplace dipole potential:
+
+   (dipvec(1)*xdiff+dipvec(2)*ydiff) * (-1/r**2)
+
+
+Note the sign flip in the Laplace dipole potential, this is due to our Green's
+function choice as log(r). 
+
+==============================================================================
+
+hfmm2dpart.f  Helmholtz FMM for particles 
+                     (potential, field, and hessian)
+
+lfmm2dpart.f  Complex valued Laplace FMM for particles 
+                     (potential, field, and hessian)
+		     hfmm2dparthess compatible
+
+lfmm2dpart.f  Real valued Laplace FMM for particles 
+                     (potential, field, and hessian)
+
+cfmm2dpart.f  Laplace FMM for particles (Cauchy sums) 
+                     (potential, field, and hessian)
+                     evaluate potz and potzz only
+		     (dz = dx + i*dy = 0 => dy = i*dx)
+
+
+d2tstrcr.f       FMM tree routines, for self and target interactions 
+d2tstrcr_omp.f       FMM tree routines, for self and target interactions 
+                     fortran 90 version, with better OpenMP scaling
+d2mtreeplot.f    FMM tree plotting routines
+
+*_dr.f         driver files
+*.make         make files
+
