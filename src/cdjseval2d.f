@@ -110,7 +110,7 @@ c
       ntop=0
       zinv=done/z
       fjs(nterms)=done
-      fjs(nterms-1)=zero
+      if( nterms .gt. 0 ) fjs(nterms-1)=zero
 c
       do 1200 i=nterms,lwfjs
          dcoef=2*i
@@ -139,7 +139,7 @@ c
       enddo
 c
       fjs(ntop)=zero
-      fjs(ntop-1)=done
+      if( ntop .gt. 0 ) fjs(ntop-1)=done
       do 2200 i=ntop-1,1,-1
 	 dcoef=2*i
          ztmp=dcoef*zinv*fjs(i)-fjs(i+1)
