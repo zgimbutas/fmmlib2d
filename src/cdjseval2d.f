@@ -72,8 +72,8 @@ c       NOTE, that fjs and fjder arrays must be at least (nterms+2)
 c       complex *16 elements long.
 c
 c
-      integer iscale(0:lwfjs)
-      complex *16 wavek,fjs(0:lwfjs),fjder(0:lwfjs)
+      integer iscale(0:1)
+      complex *16 wavek,fjs(0:1),fjder(0:1)
       complex *16 z,zinv,com,fj0,fj1,zscale,ztmp
 c
       complex *16 psi,zmul,zsn,zmulinv
@@ -109,10 +109,10 @@ c ... Step 1: recursion up to find ntop, starting from nterms
 c
       ntop=0
       zinv=done/z
-      fjs(nterms)=done
-      if( nterms .gt. 0 ) fjs(nterms-1)=zero
+      fjs(nterms+1)=done
+      fjs(nterms)=zero
 c
-      do 1200 i=nterms,lwfjs
+      do 1200 i=nterms+1,lwfjs
          dcoef=2*i
          ztmp=dcoef*zinv*fjs(i)-fjs(i-1)
          fjs(i+1)=ztmp
@@ -124,7 +124,7 @@ c
          endif
  1200 continue
  1300 continue
-      if (ntop.eq.0) then
+      if (ntop.le.2) then
          ier=8
          return
       endif
@@ -139,7 +139,7 @@ c
       enddo
 c
       fjs(ntop)=zero
-      if( ntop .gt. 0 ) fjs(ntop-1)=done
+      fjs(ntop-1)=done
       do 2200 i=ntop-1,1,-1
 	 dcoef=2*i
          ztmp=dcoef*zinv*fjs(i)-fjs(i+1)
