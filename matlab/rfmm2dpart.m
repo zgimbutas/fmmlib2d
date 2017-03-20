@@ -141,10 +141,10 @@ ier=0;
 
 if( ntarget == 0 ) 
 mex_id_ = 'rfmm2dpartself(io int[x], i int[x], i int[x], i double[xx], i int[x], i double[], i int[x], i double[], i double[xx], i int[x], io double[], i int[x], io double[], i int[x], io double[])';
-[ier, pot, grad, hess] = fmm2d_r2012a(mex_id_, ier, iprec, nsource, source, ifcharge, charge, ifdipole, dipstr, dipvec, ifpot, pot, ifgrad, grad, ifhess, hess, 1, 1, 1, 2, nsource, 1, 1, 2, nsource, 1, 1, 1);
+[ier, pot, grad, hess] = fmm2d(mex_id_, ier, iprec, nsource, source, ifcharge, charge, ifdipole, dipstr, dipvec, ifpot, pot, ifgrad, grad, ifhess, hess, 1, 1, 1, 2, nsource, 1, 1, 2, nsource, 1, 1, 1);
 else
 mex_id_ = 'rfmm2dparttarg(io int[x], i int[x], i int[x], i double[xx], i int[x], i double[], i int[x], i double[], i double[xx], i int[x], io double[], i int[x], io double[], i int[x], io double[], i int[x], i double[], i int[x], io double[], i int[x], io double[], i int[x], io double[])';
-[ier, pot, grad, hess, pottarg, gradtarg, hesstarg] = fmm2d_r2012a(mex_id_, ier, iprec, nsource, source, ifcharge, charge, ifdipole, dipstr, dipvec, ifpot, pot, ifgrad, grad, ifhess, hess, ntarget, target, ifpottarg, pottarg, ifgradtarg, gradtarg, ifhesstarg, hesstarg, 1, 1, 1, 2, nsource, 1, 1, 2, nsource, 1, 1, 1, 1, 1, 1, 1);
+[ier, pot, grad, hess, pottarg, gradtarg, hesstarg] = fmm2d(mex_id_, ier, iprec, nsource, source, ifcharge, charge, ifdipole, dipstr, dipvec, ifpot, pot, ifgrad, grad, ifhess, hess, ntarget, target, ifpottarg, pottarg, ifgradtarg, gradtarg, ifhesstarg, hesstarg, 1, 1, 1, 2, nsource, 1, 1, 2, nsource, 1, 1, 1, 1, 1, 1, 1);
 end
 
 

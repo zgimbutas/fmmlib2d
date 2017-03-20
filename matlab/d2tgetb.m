@@ -48,7 +48,7 @@ corners = zeros(2,4);
 box = zeros(1,15);
 
 mex_id_ = 'd2tgetb(io int[x], i int[x], io int[], io double[], io double[], i double[])';
-[ier, box, center, corners] = fmm2d_r2012a(mex_id_, ier, ibox, box, center, corners, lists, 1, 1);
+[ier, box, center, corners] = fmm2d(mex_id_, ier, ibox, box, center, corners, lists, 1, 1);
 
 
 

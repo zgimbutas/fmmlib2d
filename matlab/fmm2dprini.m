@@ -9,6 +9,6 @@ unit2=0;
 end
 
 mex_id_ = 'prini(i int[x], i int[x])';
-fmm2d_r2012a(mex_id_, unit1, unit2, 1, 1);
+fmm2d(mex_id_, unit1, unit2, 1, 1);
 
 

@@ -432,7 +432,7 @@ MWF77_RETURN MWF77_d2tgetl(int*, int*, int*, int*, int*, double*);
 } /* end extern C */
 #endif
 
-/* ---- fmm2d_r2012a.mw: 163 ----
+/* ---- fmm2d.mw: 163 ----
  * hfmm2dpartself(inout int[1] ier, int[1] iprec, dcomplex[1] zk, int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess);
  */
 const char* stubids1_ = "hfmm2dpartself(io int[x], i int[x], i dcomplex[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
@@ -656,7 +656,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 165 ----
+/* ---- fmm2d.mw: 165 ----
  * hfmm2dparttarg(inout int[1] ier, int[1] iprec, dcomplex[1] zk, int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
 const char* stubids2_ = "hfmm2dparttarg(io int[x], i int[x], i dcomplex[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
@@ -971,7 +971,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 305 ----
+/* ---- fmm2d.mw: 305 ----
  * h2dpartdirect(dcomplex[1] zk, int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
 const char* stubids3_ = "h2dpartdirect(i dcomplex[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
@@ -1256,7 +1256,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 460 ----
+/* ---- fmm2d.mw: 460 ----
  * lfmm2dpartself(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess);
  */
 const char* stubids4_ = "lfmm2dpartself(io int[x], i int[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
@@ -1466,7 +1466,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 462 ----
+/* ---- fmm2d.mw: 462 ----
  * lfmm2dparttarg(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
 const char* stubids5_ = "lfmm2dparttarg(io int[x], i int[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
@@ -1767,7 +1767,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 601 ----
+/* ---- fmm2d.mw: 601 ----
  * l2dpartdirect(int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
 const char* stubids6_ = "l2dpartdirect(i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
@@ -2038,7 +2038,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 737 ----
+/* ---- fmm2d.mw: 737 ----
  * zfmm2dpartself(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess);
  */
 const char* stubids7_ = "zfmm2dpartself(io int[x], i int[x], i int[x], i double[xx], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
@@ -2197,7 +2197,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 739 ----
+/* ---- fmm2d.mw: 739 ----
  * zfmm2dparttarg(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
 const char* stubids8_ = "zfmm2dparttarg(io int[x], i int[x], i int[x], i double[xx], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
@@ -2447,7 +2447,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 859 ----
+/* ---- fmm2d.mw: 859 ----
  * z2dpartdirect(int[1] nsource, double[2, nsource] source, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
 const char* stubids9_ = "z2dpartdirect(i int[x], i double[xx], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
@@ -2667,7 +2667,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 1010 ----
+/* ---- fmm2d.mw: 1010 ----
  * cfmm2dpartself(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess);
  */
 const char* stubids10_ = "cfmm2dpartself(io int[x], i int[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
@@ -2862,7 +2862,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 1012 ----
+/* ---- fmm2d.mw: 1012 ----
  * cfmm2dparttarg(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
 const char* stubids11_ = "cfmm2dparttarg(io int[x], i int[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
@@ -3148,7 +3148,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 1147 ----
+/* ---- fmm2d.mw: 1147 ----
  * c2dpartdirect(int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
 const char* stubids12_ = "c2dpartdirect(i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
@@ -3404,7 +3404,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 1302 ----
+/* ---- fmm2d.mw: 1302 ----
  * rfmm2dpartself(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, int[1] ifcharge, double[] charge, int[1] ifdipole, double[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout double[] pot, int[1] ifgrad, inout double[] grad, int[1] ifhess, inout double[] hess);
  */
 const char* stubids13_ = "rfmm2dpartself(io int[x], i int[x], i int[x], i double[xx], i int[x], i double[], i int[x], i double[], i double[xx], i int[x], io double[], i int[x], io double[], i int[x], io double[])";
@@ -3608,7 +3608,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 1304 ----
+/* ---- fmm2d.mw: 1304 ----
  * rfmm2dparttarg(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, int[1] ifcharge, double[] charge, int[1] ifdipole, double[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout double[] pot, int[1] ifgrad, inout double[] grad, int[1] ifhess, inout double[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout double[] pottarg, int[1] ifgradtarg, inout double[] gradtarg, int[1] ifhesstarg, inout double[] hesstarg);
  */
 const char* stubids14_ = "rfmm2dparttarg(io int[x], i int[x], i int[x], i double[xx], i int[x], i double[], i int[x], i double[], i double[xx], i int[x], io double[], i int[x], io double[], i int[x], io double[], i int[x], i double[], i int[x], io double[], i int[x], io double[], i int[x], io double[])";
@@ -3903,7 +3903,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 1443 ----
+/* ---- fmm2d.mw: 1443 ----
  * r2dpartdirect(int[1] nsource, double[2, nsource] source, int[1] ifcharge, double[] charge, int[1] ifdipole, double[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout double[] pot, int[1] ifgrad, inout double[] grad, int[1] ifhess, inout double[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout double[] pottarg, int[1] ifgradtarg, inout double[] gradtarg, int[1] ifhesstarg, inout double[] hesstarg);
  */
 const char* stubids15_ = "r2dpartdirect(i int[x], i double[xx], i int[x], i double[], i int[x], i double[], i double[xx], i int[x], io double[], i int[x], io double[], i int[x], io double[], i int[x], i double[], i int[x], io double[], i int[x], io double[], i int[x], io double[])";
@@ -4168,7 +4168,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 1466 ----
+/* ---- fmm2d.mw: 1466 ----
  * prini(int[1] unit1, int[1] unit2);
  */
 const char* stubids16_ = "prini(i int[x], i int[x])";
@@ -4216,7 +4216,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 1557 ----
+/* ---- fmm2d.mw: 1557 ----
  * d2tstrcr(inout int[1] ier, double[] source, int[1] nsource, inout int[1] nbox, inout int[1] nboxes, inout int[] isource, inout int[] laddr, inout int[1] nlev, inout double[] center, inout double[] size, double[] target, int[1] ntarget, inout int[] itarget, inout double[] w, int[1] lw, inout int[1] lused);
  */
 const char* stubids17_ = "d2tstrcr(io int[x], i double[], i int[x], io int[x], io int[x], io int[], io int[], io int[x], io double[], io double[], i double[], i int[x], io int[], io double[], i int[x], io int[x])";
@@ -4428,7 +4428,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 1690 ----
+/* ---- fmm2d.mw: 1690 ----
  * d2tstrcrem(inout int[1] ier, double[] source, int[1] nsource, inout int[1] nbox, inout int[1] nboxes, inout int[] isource, inout int[] laddr, inout int[1] nlev, inout double[] center, inout double[] size, double[] target, int[1] ntarget, inout int[] itarget, inout double[] w, int[1] lw, inout int[1] lused, int[1] ifempty, int[1] minvel, int[1] maxlev);
  */
 const char* stubids18_ = "d2tstrcrem(io int[x], i double[], i int[x], io int[x], io int[x], io int[], io int[], io int[x], io double[], io double[], i double[], i int[x], io int[], io double[], i int[x], io int[x], i int[x], i int[x], i int[x])";
@@ -4682,7 +4682,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 1773 ----
+/* ---- fmm2d.mw: 1773 ----
  * d2tgetb(inout int[1] ier, int[1] ibox, inout int[] box, inout double[] center, inout double[] corners, double[] lists);
  */
 const char* stubids19_ = "d2tgetb(io int[x], i int[x], io int[], io double[], io double[], i double[])";
@@ -4767,7 +4767,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm2d_r2012a.mw: 1801 ----
+/* ---- fmm2d.mw: 1801 ----
  * d2tgetl(inout int[1] ier, int[1] ibox, int[1] itype, inout int[] list, inout int[] nlist, double[] lists);
  */
 const char* stubids20_ = "d2tgetl(io int[x], i int[x], i int[x], io int[], io int[], i double[])";
@@ -4924,26 +4924,26 @@ void mexFunction(int nlhs, mxArray* plhs[],
     } else if (strcmp(id, "*profile report*") == 0) {
         if (!mexprofrecord_)
             mexPrintf("Profiler inactive\n");
-        mexPrintf("%d calls to fmm2d_r2012a.mw:163\n", mexprofrecord_[1]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:165\n", mexprofrecord_[2]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:305\n", mexprofrecord_[3]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:460\n", mexprofrecord_[4]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:462\n", mexprofrecord_[5]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:601\n", mexprofrecord_[6]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:737\n", mexprofrecord_[7]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:739\n", mexprofrecord_[8]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:859\n", mexprofrecord_[9]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:1010\n", mexprofrecord_[10]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:1012\n", mexprofrecord_[11]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:1147\n", mexprofrecord_[12]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:1302\n", mexprofrecord_[13]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:1304\n", mexprofrecord_[14]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:1443\n", mexprofrecord_[15]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:1466\n", mexprofrecord_[16]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:1557\n", mexprofrecord_[17]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:1690\n", mexprofrecord_[18]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:1773\n", mexprofrecord_[19]);
-        mexPrintf("%d calls to fmm2d_r2012a.mw:1801\n", mexprofrecord_[20]);
+        mexPrintf("%d calls to fmm2d.mw:163\n", mexprofrecord_[1]);
+        mexPrintf("%d calls to fmm2d.mw:165\n", mexprofrecord_[2]);
+        mexPrintf("%d calls to fmm2d.mw:305\n", mexprofrecord_[3]);
+        mexPrintf("%d calls to fmm2d.mw:460\n", mexprofrecord_[4]);
+        mexPrintf("%d calls to fmm2d.mw:462\n", mexprofrecord_[5]);
+        mexPrintf("%d calls to fmm2d.mw:601\n", mexprofrecord_[6]);
+        mexPrintf("%d calls to fmm2d.mw:737\n", mexprofrecord_[7]);
+        mexPrintf("%d calls to fmm2d.mw:739\n", mexprofrecord_[8]);
+        mexPrintf("%d calls to fmm2d.mw:859\n", mexprofrecord_[9]);
+        mexPrintf("%d calls to fmm2d.mw:1010\n", mexprofrecord_[10]);
+        mexPrintf("%d calls to fmm2d.mw:1012\n", mexprofrecord_[11]);
+        mexPrintf("%d calls to fmm2d.mw:1147\n", mexprofrecord_[12]);
+        mexPrintf("%d calls to fmm2d.mw:1302\n", mexprofrecord_[13]);
+        mexPrintf("%d calls to fmm2d.mw:1304\n", mexprofrecord_[14]);
+        mexPrintf("%d calls to fmm2d.mw:1443\n", mexprofrecord_[15]);
+        mexPrintf("%d calls to fmm2d.mw:1466\n", mexprofrecord_[16]);
+        mexPrintf("%d calls to fmm2d.mw:1557\n", mexprofrecord_[17]);
+        mexPrintf("%d calls to fmm2d.mw:1690\n", mexprofrecord_[18]);
+        mexPrintf("%d calls to fmm2d.mw:1773\n", mexprofrecord_[19]);
+        mexPrintf("%d calls to fmm2d.mw:1801\n", mexprofrecord_[20]);
     } else if (strcmp(id, "*profile log*") == 0) {
         FILE* logfp;
         if (nrhs != 2 || mxGetString(prhs[1], id, sizeof(id)) != 0)
@@ -4953,26 +4953,26 @@ void mexFunction(int nlhs, mxArray* plhs[],
             mexErrMsgTxt("Cannot open log for output");
         if (!mexprofrecord_)
             fprintf(logfp, "Profiler inactive\n");
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:163\n", mexprofrecord_[1]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:165\n", mexprofrecord_[2]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:305\n", mexprofrecord_[3]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:460\n", mexprofrecord_[4]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:462\n", mexprofrecord_[5]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:601\n", mexprofrecord_[6]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:737\n", mexprofrecord_[7]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:739\n", mexprofrecord_[8]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:859\n", mexprofrecord_[9]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:1010\n", mexprofrecord_[10]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:1012\n", mexprofrecord_[11]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:1147\n", mexprofrecord_[12]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:1302\n", mexprofrecord_[13]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:1304\n", mexprofrecord_[14]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:1443\n", mexprofrecord_[15]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:1466\n", mexprofrecord_[16]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:1557\n", mexprofrecord_[17]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:1690\n", mexprofrecord_[18]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:1773\n", mexprofrecord_[19]);
-        fprintf(logfp, "%d calls to fmm2d_r2012a.mw:1801\n", mexprofrecord_[20]);
+        fprintf(logfp, "%d calls to fmm2d.mw:163\n", mexprofrecord_[1]);
+        fprintf(logfp, "%d calls to fmm2d.mw:165\n", mexprofrecord_[2]);
+        fprintf(logfp, "%d calls to fmm2d.mw:305\n", mexprofrecord_[3]);
+        fprintf(logfp, "%d calls to fmm2d.mw:460\n", mexprofrecord_[4]);
+        fprintf(logfp, "%d calls to fmm2d.mw:462\n", mexprofrecord_[5]);
+        fprintf(logfp, "%d calls to fmm2d.mw:601\n", mexprofrecord_[6]);
+        fprintf(logfp, "%d calls to fmm2d.mw:737\n", mexprofrecord_[7]);
+        fprintf(logfp, "%d calls to fmm2d.mw:739\n", mexprofrecord_[8]);
+        fprintf(logfp, "%d calls to fmm2d.mw:859\n", mexprofrecord_[9]);
+        fprintf(logfp, "%d calls to fmm2d.mw:1010\n", mexprofrecord_[10]);
+        fprintf(logfp, "%d calls to fmm2d.mw:1012\n", mexprofrecord_[11]);
+        fprintf(logfp, "%d calls to fmm2d.mw:1147\n", mexprofrecord_[12]);
+        fprintf(logfp, "%d calls to fmm2d.mw:1302\n", mexprofrecord_[13]);
+        fprintf(logfp, "%d calls to fmm2d.mw:1304\n", mexprofrecord_[14]);
+        fprintf(logfp, "%d calls to fmm2d.mw:1443\n", mexprofrecord_[15]);
+        fprintf(logfp, "%d calls to fmm2d.mw:1466\n", mexprofrecord_[16]);
+        fprintf(logfp, "%d calls to fmm2d.mw:1557\n", mexprofrecord_[17]);
+        fprintf(logfp, "%d calls to fmm2d.mw:1690\n", mexprofrecord_[18]);
+        fprintf(logfp, "%d calls to fmm2d.mw:1773\n", mexprofrecord_[19]);
+        fprintf(logfp, "%d calls to fmm2d.mw:1801\n", mexprofrecord_[20]);
         fclose(logfp);
     } else
         mexErrMsgTxt("Unknown identifier");

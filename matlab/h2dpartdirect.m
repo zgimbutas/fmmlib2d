@@ -125,7 +125,7 @@ if( ifhesstarg == 1 ), hesstarg=zeros(3,ntarget)+1i*zeros(3,ntarget); end;
 ier=0;
 
 mex_id_ = 'h2dpartdirect(i dcomplex[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])';
-[pot, grad, hess, pottarg, gradtarg, hesstarg] = fmm2d_r2012a(mex_id_, zk, nsource, source, ifcharge, charge, ifdipole, dipstr, dipvec, ifpot, pot, ifgrad, grad, ifhess, hess, ntarget, target, ifpottarg, pottarg, ifgradtarg, gradtarg, ifhesstarg, hesstarg, 1, 1, 2, nsource, 1, 1, 2, nsource, 1, 1, 1, 1, 1, 1, 1);
+[pot, grad, hess, pottarg, gradtarg, hesstarg] = fmm2d(mex_id_, zk, nsource, source, ifcharge, charge, ifdipole, dipstr, dipvec, ifpot, pot, ifgrad, grad, ifhess, hess, ntarget, target, ifpottarg, pottarg, ifgradtarg, gradtarg, ifhesstarg, hesstarg, 1, 1, 2, nsource, 1, 1, 2, nsource, 1, 1, 1, 1, 1, 1, 1);
 
 
 if( ifpot == 1 ) U.pot=pot; end

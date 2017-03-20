@@ -35,23 +35,23 @@ doc:
 mex: mex-octave mex-matlab
 
 mex-octave: 
-	cd $(MATLAB); $(MAKE) linux-octave-64bit
+	cd $(MATLAB); $(MAKE) MW=../bin/mwrap linux-octave-64bit
 
 test-mex-octave: 
 	cd $(MATLAB); octave test_hfmm2dpart_direct.m
 
 mex-matlab: 
-	cd $(MATLAB); $(MAKE) linux-matlab-64bit
+	cd $(MATLAB); $(MAKE) MW=../bin/mwrap linux-matlab-64bit
 
 test-mex-matlab: 
 	cd $(MATLAB); matlab -nodesktop -nojvm < test_hfmm2dpart_direct.m
 
 mwrap: 
 	cd $(MWRAP); $(MAKE) 
-	cp -f $(MWRAP)/mwrap ./bin
+	mv -f $(MWRAP)/mwrap ./bin/
 
 test-mwrap-mex-octave: mwrap 
-	cd $(MATLAB); $(MAKE) MWRAP=../bin linux-octave-64bit
+	cd $(MATLAB); $(MAKE) MW=../bin/mwrap linux-octave-64bit
 
 all: lib test doc mwrap mex test-mex-octave
 
