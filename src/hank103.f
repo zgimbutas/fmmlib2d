@@ -1,9 +1,9 @@
-
-c
-c
-c
-c
-c
+cc Copyright (C) 2010: Vladimir Rokhlin
+cc Copyright (C) 2009-2012: Leslie Greengard and Zydrunas Gimbutas
+cc Contact: greengard@cims.nyu.edu
+cc 
+cc This software is being released under a modified FreeBSD license
+cc (see COPYING in home directory). 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c
