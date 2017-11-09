@@ -1,8 +1,25 @@
 # Helmholtz and Laplace FMM library in R^2.
 
-Date: November 8, 2017
+Date: November 9, 2017
 
-Version 1.2.1
+Version 1.2.2
+
+
+The FMMLIB2D suite permits the evaluation of potential fields due to
+particle sources, governed by either the Laplace or Helmholtz equation
+in free space. The codes are easy to use and reasonably well optimized
+for performance. A rudimentary manual is provided in the FMM2D/doc
+directory.
+
+FMMLIB2D contains both Fortran source code and versions compiled for
+MATLAB under Mac OS X (64 bit), Windows (64 bit), and Linux (64 bit).
+
+This work was supported in part by the Department of Energy and in
+part by the Air Force Office of Scientific Research under MURI grant
+FA9550-06-1-0337 and NSSEFF Program Award FA9550-10-0180, in part by
+the NSF under grant DMS09-34733, and in part by Meyer Sound
+Laboratories, Inc.
+
 
 ### License
 
