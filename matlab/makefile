@@ -1,4 +1,3 @@
-
 all: linux clean
 
 linux: linux-octave-64bit linux-matlab-64bit
@@ -14,6 +13,10 @@ linux-octave-64bit:
 linux-matlab-64bit:
 	$(MAKE) -f makefile.mwrap TARGET=matlab-linux-a64-openmp clean
 	$(MAKE) -f makefile.mwrap TARGET=matlab-linux-a64-openmp -j
+
+macosx-octave-64bit:
+	$(MAKE) -f makefile.mwrap TARGET=octave-macosx-openmp clean
+	$(MAKE) -f makefile.mwrap TARGET=octave-macosx-openmp -j
 
 macosx-matlab-32bit:
 	$(MAKE) -f makefile.mwrap TARGET=matlab-maci-openmp clean
