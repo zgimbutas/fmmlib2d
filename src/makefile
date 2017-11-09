@@ -1,6 +1,6 @@
 # Helmholtz and Laplace particle FMMs in R^2
 
-PROJECT_LIB=hfmm2d
+PROJECT_LIB=fmm2d
 
 
 ###HOST=windows
