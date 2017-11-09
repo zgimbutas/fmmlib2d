@@ -1,8 +1,10 @@
-This is the second public release of the particle FMM library in R^2.
+# Helmholtz and Laplace FMM library in R^2.
 
 Date: November 8, 2017
 
 Version 1.2.1
+
+### License
 
 ```
 Copyright (C) 2010-2012: Leslie Greengard and Zydrunas Gimbutas
