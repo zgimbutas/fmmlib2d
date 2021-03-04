@@ -121,6 +121,14 @@ c2dpartdirect - Laplace particle target interactions in R^2 (g. Cauchy).
 %
 ```
 
+### Octave
+
+These routines are identical to the Matlab ones.
+To test the shipped mex binary, use eg
+`cd matlab; octave test_hfmm2dpart_direct.m`.
+To rebuild the binary use `make mex-octave`, then test as above.
+
+
 ### Acknowledgments
 
 This work was supported in part by the Department of Energy and in
