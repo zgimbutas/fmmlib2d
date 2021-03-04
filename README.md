@@ -55,21 +55,14 @@ src/ - Fortran source code
 examples/ - Fortran testing drivers and makefiles
 matlab/ - matlab scripts and mex files 
 contrib/mwrap-0.33.3/ - mwrap source code
+INSTALL.md - installation and testing instructions
 ```
 
 To test the library, please type `make test`, and when prompted
-to `ENTER n` type something sensible like `10000` or `100000`.
+to `ENTER n` type something sensible like `10000`.
 You should see text output with small errors listed.
 Warnings about floating-point exceptions are normal and to be ignored.
-
-**Note** if using gfortran v 10 or above: Since we use passing of size-1 arrays
-as pointers, GCC10+ raises errors. You will need to add
-```
-FFLAGS+=-std=legacy
-```
-in the relevant sections of `src/Makefile` and `examples/*.make`
-which turns these into mere warnings.
-
+See [INSTALL.md](INSTALL.md) for more details.
 
 
 ### Fortran
@@ -100,7 +93,7 @@ z2dpartdirect - Laplace particle target interactions in R^2 (Cauchy).
 c2dpartdirect - Laplace particle target interactions in R^2 (g. Cauchy).
 ```
 
-### Matlab
+### MATLAB / Octave
 
 ```
 % Helmholtz and Laplace FMMs in R^2.
@@ -120,14 +113,6 @@ c2dpartdirect - Laplace particle target interactions in R^2 (g. Cauchy).
 %   c2dpartdirect - Laplace particle target interactions in R^2 (g. Cauchy).
 %
 ```
-
-### Octave
-
-These routines are identical to the Matlab ones.
-To test the shipped mex binary, use eg
-`cd matlab; octave test_hfmm2dpart_direct.m`.
-To rebuild the binary use `make mex-octave`, then test as above.
-
 
 ### Acknowledgments
 
