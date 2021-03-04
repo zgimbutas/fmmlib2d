@@ -12,7 +12,8 @@ for performance. A rudimentary manual is provided in the FMM2D/doc
 directory.
 
 FMMLIB2D contains both Fortran source code and versions compiled for
-MATLAB under Mac OS X (64 bit), Windows (64 bit), and Linux (64 bit).
+MATLAB under Mac OS X (64 bit), Windows (64 bit), and Linux (64 bit),
+and Octave until Linux.
 
 
 ### License
@@ -56,7 +57,19 @@ matlab/ - matlab scripts and mex files
 contrib/mwrap-0.33.3/ - mwrap source code
 ```
 
-To test the library, please type `make test`. 
+To test the library, please type `make test`, and when prompted
+to `ENTER n` type something sensible like `10000` or `100000`.
+You should see text output with small errors listed.
+Warnings about floating-point exceptions are normal and to be ignored.
+
+**Note** if using gfortran v 10 or above: Since we use passing of size-1 arrays
+as pointers, GCC10+ raises errors. You will need to add
+```
+FFLAGS+=-std=legacy
+```
+in the relevant sections of `src/Makefile` and `examples/*.make`
+which turns these into mere warnings.
+
 
 
 ### Fortran

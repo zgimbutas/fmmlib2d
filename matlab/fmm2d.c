@@ -435,7 +435,7 @@ MWF77_RETURN MWF77_d2tgetl(int*, int*, int*, int*, int*, double*);
 /* ---- fmm2d.mw: 155 ----
  * hfmm2dpartself(inout int[1] ier, int[1] iprec, dcomplex[1] zk, int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess);
  */
-static const char* stubids1_ = "hfmm2dpartself(io int[x], i int[x], i dcomplex[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
+const char* stubids1_ = "hfmm2dpartself(io int[x], i int[x], i dcomplex[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
 
 void mexStub1(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -659,7 +659,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 157 ----
  * hfmm2dparttarg(inout int[1] ier, int[1] iprec, dcomplex[1] zk, int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
-static const char* stubids2_ = "hfmm2dparttarg(io int[x], i int[x], i dcomplex[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
+const char* stubids2_ = "hfmm2dparttarg(io int[x], i int[x], i dcomplex[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
 
 void mexStub2(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -974,7 +974,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 297 ----
  * h2dpartdirect(dcomplex[1] zk, int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
-static const char* stubids3_ = "h2dpartdirect(i dcomplex[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
+const char* stubids3_ = "h2dpartdirect(i dcomplex[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
 
 void mexStub3(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -1259,7 +1259,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 452 ----
  * lfmm2dpartself(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess);
  */
-static const char* stubids4_ = "lfmm2dpartself(io int[x], i int[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
+const char* stubids4_ = "lfmm2dpartself(io int[x], i int[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
 
 void mexStub4(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -1469,7 +1469,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 454 ----
  * lfmm2dparttarg(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
-static const char* stubids5_ = "lfmm2dparttarg(io int[x], i int[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
+const char* stubids5_ = "lfmm2dparttarg(io int[x], i int[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
 
 void mexStub5(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -1770,7 +1770,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 593 ----
  * l2dpartdirect(int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
-static const char* stubids6_ = "l2dpartdirect(i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
+const char* stubids6_ = "l2dpartdirect(i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i double[xx], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
 
 void mexStub6(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -2041,7 +2041,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 729 ----
  * zfmm2dpartself(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess);
  */
-static const char* stubids7_ = "zfmm2dpartself(io int[x], i int[x], i int[x], i double[xx], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
+const char* stubids7_ = "zfmm2dpartself(io int[x], i int[x], i int[x], i double[xx], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
 
 void mexStub7(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -2200,7 +2200,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 731 ----
  * zfmm2dparttarg(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
-static const char* stubids8_ = "zfmm2dparttarg(io int[x], i int[x], i int[x], i double[xx], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
+const char* stubids8_ = "zfmm2dparttarg(io int[x], i int[x], i int[x], i double[xx], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
 
 void mexStub8(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -2450,7 +2450,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 851 ----
  * z2dpartdirect(int[1] nsource, double[2, nsource] source, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
-static const char* stubids9_ = "z2dpartdirect(i int[x], i double[xx], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
+const char* stubids9_ = "z2dpartdirect(i int[x], i double[xx], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
 
 void mexStub9(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -2670,7 +2670,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 1002 ----
  * cfmm2dpartself(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess);
  */
-static const char* stubids10_ = "cfmm2dpartself(io int[x], i int[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
+const char* stubids10_ = "cfmm2dpartself(io int[x], i int[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
 
 void mexStub10(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -2865,7 +2865,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 1004 ----
  * cfmm2dparttarg(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
-static const char* stubids11_ = "cfmm2dparttarg(io int[x], i int[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
+const char* stubids11_ = "cfmm2dparttarg(io int[x], i int[x], i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
 
 void mexStub11(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -3151,7 +3151,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 1139 ----
  * c2dpartdirect(int[1] nsource, double[2, nsource] source, int[1] ifcharge, dcomplex[] charge, int[1] ifdipole, dcomplex[] dipstr, int[1] ifpot, inout dcomplex[] pot, int[1] ifgrad, inout dcomplex[] grad, int[1] ifhess, inout dcomplex[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout dcomplex[] pottarg, int[1] ifgradtarg, inout dcomplex[] gradtarg, int[1] ifhesstarg, inout dcomplex[] hesstarg);
  */
-static const char* stubids12_ = "c2dpartdirect(i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
+const char* stubids12_ = "c2dpartdirect(i int[x], i double[xx], i int[x], i dcomplex[], i int[x], i dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], i double[], i int[x], io dcomplex[], i int[x], io dcomplex[], i int[x], io dcomplex[])";
 
 void mexStub12(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -3407,7 +3407,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 1294 ----
  * rfmm2dpartself(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, int[1] ifcharge, double[] charge, int[1] ifdipole, double[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout double[] pot, int[1] ifgrad, inout double[] grad, int[1] ifhess, inout double[] hess);
  */
-static const char* stubids13_ = "rfmm2dpartself(io int[x], i int[x], i int[x], i double[xx], i int[x], i double[], i int[x], i double[], i double[xx], i int[x], io double[], i int[x], io double[], i int[x], io double[])";
+const char* stubids13_ = "rfmm2dpartself(io int[x], i int[x], i int[x], i double[xx], i int[x], i double[], i int[x], i double[], i double[xx], i int[x], io double[], i int[x], io double[], i int[x], io double[])";
 
 void mexStub13(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -3611,7 +3611,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 1296 ----
  * rfmm2dparttarg(inout int[1] ier, int[1] iprec, int[1] nsource, double[2, nsource] source, int[1] ifcharge, double[] charge, int[1] ifdipole, double[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout double[] pot, int[1] ifgrad, inout double[] grad, int[1] ifhess, inout double[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout double[] pottarg, int[1] ifgradtarg, inout double[] gradtarg, int[1] ifhesstarg, inout double[] hesstarg);
  */
-static const char* stubids14_ = "rfmm2dparttarg(io int[x], i int[x], i int[x], i double[xx], i int[x], i double[], i int[x], i double[], i double[xx], i int[x], io double[], i int[x], io double[], i int[x], io double[], i int[x], i double[], i int[x], io double[], i int[x], io double[], i int[x], io double[])";
+const char* stubids14_ = "rfmm2dparttarg(io int[x], i int[x], i int[x], i double[xx], i int[x], i double[], i int[x], i double[], i double[xx], i int[x], io double[], i int[x], io double[], i int[x], io double[], i int[x], i double[], i int[x], io double[], i int[x], io double[], i int[x], io double[])";
 
 void mexStub14(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -3906,7 +3906,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 1435 ----
  * r2dpartdirect(int[1] nsource, double[2, nsource] source, int[1] ifcharge, double[] charge, int[1] ifdipole, double[] dipstr, double[2, nsource] dipvec, int[1] ifpot, inout double[] pot, int[1] ifgrad, inout double[] grad, int[1] ifhess, inout double[] hess, int[1] ntarget, double[] target, int[1] ifpottarg, inout double[] pottarg, int[1] ifgradtarg, inout double[] gradtarg, int[1] ifhesstarg, inout double[] hesstarg);
  */
-static const char* stubids15_ = "r2dpartdirect(i int[x], i double[xx], i int[x], i double[], i int[x], i double[], i double[xx], i int[x], io double[], i int[x], io double[], i int[x], io double[], i int[x], i double[], i int[x], io double[], i int[x], io double[], i int[x], io double[])";
+const char* stubids15_ = "r2dpartdirect(i int[x], i double[xx], i int[x], i double[], i int[x], i double[], i double[xx], i int[x], io double[], i int[x], io double[], i int[x], io double[], i int[x], i double[], i int[x], io double[], i int[x], io double[], i int[x], io double[])";
 
 void mexStub15(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -4171,7 +4171,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 1458 ----
  * prini(int[1] unit1, int[1] unit2);
  */
-static const char* stubids16_ = "prini(i int[x], i int[x])";
+const char* stubids16_ = "prini(i int[x], i int[x])";
 
 void mexStub16(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -4219,7 +4219,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 1549 ----
  * d2tstrcr(inout int[1] ier, double[] source, int[1] nsource, inout int[1] nbox, inout int[1] nboxes, inout int[] isource, inout int[] laddr, inout int[1] nlev, inout double[] center, inout double[] size, double[] target, int[1] ntarget, inout int[] itarget, inout double[] w, int[1] lw, inout int[1] lused);
  */
-static const char* stubids17_ = "d2tstrcr(io int[x], i double[], i int[x], io int[x], io int[x], io int[], io int[], io int[x], io double[], io double[], i double[], i int[x], io int[], io double[], i int[x], io int[x])";
+const char* stubids17_ = "d2tstrcr(io int[x], i double[], i int[x], io int[x], io int[x], io int[], io int[], io int[x], io double[], io double[], i double[], i int[x], io int[], io double[], i int[x], io int[x])";
 
 void mexStub17(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -4431,7 +4431,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 1682 ----
  * d2tstrcrem(inout int[1] ier, double[] source, int[1] nsource, inout int[1] nbox, inout int[1] nboxes, inout int[] isource, inout int[] laddr, inout int[1] nlev, inout double[] center, inout double[] size, double[] target, int[1] ntarget, inout int[] itarget, inout double[] w, int[1] lw, inout int[1] lused, int[1] ifempty, int[1] minvel, int[1] maxlev);
  */
-static const char* stubids18_ = "d2tstrcrem(io int[x], i double[], i int[x], io int[x], io int[x], io int[], io int[], io int[x], io double[], io double[], i double[], i int[x], io int[], io double[], i int[x], io int[x], i int[x], i int[x], i int[x])";
+const char* stubids18_ = "d2tstrcrem(io int[x], i double[], i int[x], io int[x], io int[x], io int[], io int[], io int[x], io double[], io double[], i double[], i int[x], io int[], io double[], i int[x], io int[x], i int[x], i int[x], i int[x])";
 
 void mexStub18(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -4685,7 +4685,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 1765 ----
  * d2tgetb(inout int[1] ier, int[1] ibox, inout int[] box, inout double[] center, inout double[] corners, double[] lists);
  */
-static const char* stubids19_ = "d2tgetb(io int[x], i int[x], io int[], io double[], io double[], i double[])";
+const char* stubids19_ = "d2tgetb(io int[x], i int[x], io int[], io double[], io double[], i double[])";
 
 void mexStub19(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -4770,7 +4770,7 @@ mw_err_label:
 /* ---- fmm2d.mw: 1793 ----
  * d2tgetl(inout int[1] ier, int[1] ibox, int[1] itype, inout int[] list, inout int[] nlist, double[] lists);
  */
-static const char* stubids20_ = "d2tgetl(io int[x], i int[x], i int[x], io int[], io int[], i double[])";
+const char* stubids20_ = "d2tgetl(io int[x], i int[x], i int[x], io int[], io int[], i double[])";
 
 void mexStub20(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])

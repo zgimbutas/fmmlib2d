@@ -264,10 +264,10 @@ c
         complex *16 grad(2,*)
         complex *16 hess(3,*)
 c
-        real *8 target(2,1)
-        complex *16 pottarg(1)
-        complex *16 gradtarg(2,1)        
-        complex *16 hesstarg(3,1)
+        real *8 target(2,*)
+        complex *16 pottarg(*)
+        complex *16 gradtarg(2,*)        
+        complex *16 hesstarg(3,*)
 c
         real *8 timeinfo(10)
 c       
