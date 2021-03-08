@@ -1,8 +1,8 @@
 # Helmholtz and Laplace FMM library in R^2.
 
-Date: November 9, 2017
+Date: March 7, 2021
 
-Version 1.2.2
+Version 1.2.3
 
 
 The FMMLIB2D suite permits the evaluation of potential fields due to
