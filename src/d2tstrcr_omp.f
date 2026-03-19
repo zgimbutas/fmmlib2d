@@ -1,13 +1,8 @@
-cc Copyright (C) 2010: Vladimir Rokhlin
-cc Copyright (C) 2009-2012: Leslie Greengard and Zydrunas Gimbutas
-cc Contact: greengard@cims.nyu.edu
-cc 
-cc This software is being released under a modified FreeBSD license
-cc (see COPYING in home directory). 
+cc SPDX-License-Identifier: BSD-3-Clause
+cc Copyright (C) 2011: Leslie Greengard, Zydrunas Gimbutas, Vladimir Rokhlin
+cc See LICENSE file for full license text
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c    $Date: 2011-04-15 22:14:18 -0400 (Fri, 15 Apr 2011) $
-c    $Revision: 1834 $
 c
 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -167,14 +162,14 @@ c	 initialize the sorting index
 c
 C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i)        
         do i=1,n
-	iz(i)=i
-	enddo
+        iz(i)=i
+        enddo
 C$OMP END PARALLEL DO
 c
 C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i)        
         do i=1,ntarg
-	iztarg(i)=i
-	enddo
+        iztarg(i)=i
+        enddo
 C$OMP END PARALLEL DO
 c
         allocate( z0(2,n) )
@@ -186,16 +181,16 @@ c
 c
 C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i)        
         do i=1,n
-	z0(1,i)=z(1,i)
-	z0(2,i)=z(2,i)
-	enddo
+        z0(1,i)=z(1,i)
+        z0(2,i)=z(2,i)
+        enddo
 C$OMP END PARALLEL DO
 c
 C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i)        
         do i=1,ntarg
-	z0targ(1,i)=ztarg(1,i)
-	z0targ(2,i)=ztarg(2,i)
-	enddo
+        z0targ(1,i)=ztarg(1,i)
+        z0targ(2,i)=ztarg(2,i)
+        enddo
 C$OMP END PARALLEL DO
 c
         t1=second()
@@ -763,10 +758,15 @@ c
 c
         subroutine d2tlsts(ier,boxes,nboxes,corners,w,lw,lused)
         implicit real *8 (a-h,o-z)
-        integer boxes(15,*),collkids(50000),w(*),
-     1      dadcolls(2000),list5(20000),stack(60000)
+        integer boxes(15,*),w(*)
+        integer, allocatable :: collkids(:),dadcolls(:)
+        integer, allocatable :: list5(:),stack(:)
         real *8 corners(2,4,*)
-ccc        save
+ccc     save
+        allocate(collkids(50000))
+        allocate(dadcolls(50000))
+        allocate(list5(50000))
+        allocate(stack(50000))
 c
 c        this subroutine constructs all lists for all boxes 
 c        and stores them in the storage area w in the form

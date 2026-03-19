@@ -1,12 +1,8 @@
-cc Copyright (C) 2009-2012: Leslie Greengard and Zydrunas Gimbutas
-cc Contact: greengard@cims.nyu.edu
-cc 
-cc This software is being released under a modified FreeBSD license
-cc (see COPYING in home directory). 
+cc SPDX-License-Identifier: BSD-3-Clause
+cc Copyright (C) 2010-2011: Leslie Greengard and Zydrunas Gimbutas
+cc See LICENSE file for full license text
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c    $Date$
-c    $Revision$
 c
 c       
 c     This file contains the main FMM routines and some related
@@ -36,17 +32,17 @@ c \hessian  \phi(z_i) = \frac{\partial^2 \phi(z_i)}{\partial z^2}
 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c     cfmm2dpart - Generalized Cauchy FMM in R^2: evaluate all pairwise particle
+c     cfmm2dpart_nd - Generalized Cauchy FMM in R^2: evaluate all pairwise particle
 c         interactions (ignoring self-interaction)
 c
-c     cfmm2dpartself - Generalized Cauchy FMM in R^2: evaluate all pairwise 
+c     cfmm2dpartself_nd - Generalized Cauchy FMM in R^2: evaluate all pairwise 
 c         particle interactions (ignoring self-interaction)
 c
-c     cfmm2dparttarg - Generalized Cauchy FMM in R^2: evaluate all pairwise
+c     cfmm2dparttarg_nd - Generalized Cauchy FMM in R^2: evaluate all pairwise
 c         particle interactions (ignoring self-interaction) +
 c         interactions with targets
 c
-c     c2dpartdirect - Generalized Cauchy  interactions in R^2:  evaluate all
+c     c2dpartdirect_nd - Generalized Cauchy  interactions in R^2:  evaluate all
 c         pairwise particle interactions (ignoring self-interaction) +
 c         interactions with targets via direct O(N^2) algorithm
 c
@@ -59,7 +55,76 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c
 c
-        subroutine cfmm2dpart(ier,iprec,nsource,source,
+        subroutine cfmm2dpart_nd(ier,iprec,nd,nsource,source,
+     $     ifcharge,charge,ifdipole,dipstr,
+     $     ifpot,pot,ifgrad,grad,ifhess,hess)
+        implicit real *8 (a-h,o-z)
+c
+c       Generalized Cauchy FMM in R^2: evaluate all pairwise particle
+c       interactions (ignoring self-interaction).
+c
+c       We use log(z) for the Green's function.
+c       Self-interactions are not included.
+c
+c cfmm2d: charge and dipstr are complex valued, z are complex numbers.
+c
+c        Note, that the complex valued logarithm is a multi-valued
+c        function, so the potential values have to be interpreted
+c        carefully, if charges are specified.  For example, only the
+c        real part of potential is meaningful for real valued charges.
+c        The gradients and hessians are valid for arbitrary complex charges.
+c
+c \phi(z_i) = \sum_{j\ne i} charge_j \log(z_i-z_j) + dipstr_j \frac{1}{z_i-z_j}
+c
+c        In this routine, we define the gradient as the first
+c        derivative with respect to z, and the hessian as the second
+c        derivative with respect to z.
+c
+c \gradient \phi(z_i) = \frac{\partial \phi(z_i)}{\partial z}
+c \hessian  \phi(z_i) = \frac{\partial^2 \phi(z_i)}{\partial z^2}
+c
+c       The main FMM routine permits both evaluation at sources
+c       and at a collection of targets.
+c       This subroutine is used to simplify the user interface
+c       (by setting the number of targets to zero) and calling the more
+c       general FMM.
+c
+c       See below for explanation of calling sequence arguments.
+c
+        real *8 source(2,*)
+        complex *16 charge(nd,*)
+        complex *16 dipstr(nd,*)
+        complex *16 ima
+        complex *16 pot(nd,*)
+        complex *16 grad(nd,*)
+        complex *16 hess(nd,*)
+c
+        real *8 target(2,1)
+        complex *16 pottarg(nd,1)
+        complex *16 gradtarg(nd,1)
+        complex *16 hesstarg(nd,1)
+c
+        data ima/(0.0d0,1.0d0)/
+c
+        ntarget=0
+        ifpottarg=0
+        ifgradtarg=0
+        ifhesstarg=0
+c
+        call cfmm2dparttarg_nd(ier,iprec,nd,nsource,source,
+     $     ifcharge,charge,ifdipole,dipstr,
+     $     ifpot,pot,ifgrad,grad,ifhess,hess,
+     $     ntarget,target,ifpottarg,pottarg,ifgradtarg,gradtarg,
+     $     ifhesstarg,hesstarg)
+c
+        return
+        end
+c
+c
+c
+c
+c
+        subroutine cfmm2dpartself_nd(ier,iprec,nd,nsource,source,
      $     ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess)
         implicit real *8 (a-h,o-z)
@@ -96,17 +161,17 @@ c
 c       See below for explanation of calling sequence arguments.
 c  
         real *8 source(2,*)
-        complex *16 charge(*)
-        complex *16 dipstr(*)
+        complex *16 charge(nd,*)
+        complex *16 dipstr(nd,*)
         complex *16 ima
-        complex *16 pot(*)
-        complex *16 grad(*)
-        complex *16 hess(*)
+        complex *16 pot(nd,*)
+        complex *16 grad(nd,*)
+        complex *16 hess(nd,*)
 c
         real *8 target(2,1)
-        complex *16 pottarg(1)
-        complex *16 gradtarg(1)
-        complex *16 hesstarg(1)        
+        complex *16 pottarg(nd,1)
+        complex *16 gradtarg(nd,1)
+        complex *16 hesstarg(nd,1)        
 c
         data ima/(0.0d0,1.0d0)/
 c       
@@ -115,7 +180,7 @@ c
         ifgradtarg=0
         ifhesstarg=0
 c
-        call cfmm2dparttarg(ier,iprec,nsource,source,
+        call cfmm2dparttarg_nd(ier,iprec,nd,nsource,source,
      $     ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     ntarget,target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -128,76 +193,7 @@ c
 c
 c
 c
-        subroutine cfmm2dpartself(ier,iprec,nsource,source,
-     $     ifcharge,charge,ifdipole,dipstr,
-     $     ifpot,pot,ifgrad,grad,ifhess,hess)
-        implicit real *8 (a-h,o-z)
-c              
-c       Generalized Cauchy FMM in R^2: evaluate all pairwise particle
-c       interactions (ignoring self-interaction). 
-c
-c       We use log(z) for the Green's function.
-c       Self-interactions are not included.
-c   
-c cfmm2d: charge and dipstr are complex valued, z are complex numbers.
-c
-c        Note, that the complex valued logarithm is a multi-valued
-c        function, so the potential values have to be interpreted
-c        carefully, if charges are specified.  For example, only the
-c        real part of potential is meaningful for real valued charges.
-c        The gradients and hessians are valid for arbitrary complex charges.
-c
-c \phi(z_i) = \sum_{j\ne i} charge_j \log(z_i-z_j) + dipstr_j \frac{1}{z_i-z_j}
-c
-c        In this routine, we define the gradient as the first
-c        derivative with respect to z, and the hessian as the second
-c        derivative with respect to z.
-c
-c \gradient \phi(z_i) = \frac{\partial \phi(z_i)}{\partial z}
-c \hessian  \phi(z_i) = \frac{\partial^2 \phi(z_i)}{\partial z^2}
-c
-c       The main FMM routine permits both evaluation at sources
-c       and at a collection of targets. 
-c       This subroutine is used to simplify the user interface 
-c       (by setting the number of targets to zero) and calling the more 
-c       general FMM.
-c
-c       See below for explanation of calling sequence arguments.
-c  
-        real *8 source(2,*)
-        complex *16 charge(*)
-        complex *16 dipstr(*)
-        complex *16 ima
-        complex *16 pot(*)
-        complex *16 grad(*)
-        complex *16 hess(*)
-c
-        real *8 target(2,1)
-        complex *16 pottarg(1)
-        complex *16 gradtarg(1)
-        complex *16 hesstarg(1)        
-c
-        data ima/(0.0d0,1.0d0)/
-c       
-        ntarget=0
-        ifpottarg=0
-        ifgradtarg=0
-        ifhesstarg=0
-c
-        call cfmm2dparttarg(ier,iprec,nsource,source,
-     $     ifcharge,charge,ifdipole,dipstr,
-     $     ifpot,pot,ifgrad,grad,ifhess,hess,
-     $     ntarget,target,ifpottarg,pottarg,ifgradtarg,gradtarg,
-     $     ifhesstarg,hesstarg)
-c
-        return
-        end
-c
-c
-c
-c
-c
-        subroutine cfmm2dparttarg(ier,iprec,nsource,source,
+        subroutine cfmm2dparttarg_nd(ier,iprec,nd,nsource,source,
      $     ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     ntarget,target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -287,17 +283,17 @@ c
 c
 c
         real *8 source(2,*)
-        complex *16 charge(*)
-        complex *16 dipstr(*)
+        complex *16 charge(nd,*)
+        complex *16 dipstr(nd,*)
         complex *16 ima
-        complex *16 pot(*)
-        complex *16 grad(*)
-        complex *16 hess(*)
+        complex *16 pot(nd,*)
+        complex *16 grad(nd,*)
+        complex *16 hess(nd,*)
 c
         real *8 target(2,*)
-        complex *16 pottarg(*)
-        complex *16 gradtarg(*)        
-        complex *16 hesstarg(*)
+        complex *16 pottarg(nd,*)
+        complex *16 gradtarg(nd,*)
+        complex *16 hesstarg(nd,*)
 c
         real *8 timeinfo(10)
 c       
@@ -323,7 +319,7 @@ c
 c       
         real *8, allocatable :: w(:)
         real *8, allocatable :: wlists(:)
-        real *8, allocatable :: wrmlexp(:)
+        complex *16, allocatable :: wrmlexp(:)
 c
         data ima/(0.0d0,1.0d0)/
 c       
@@ -431,11 +427,11 @@ c
         itargetsort = isourcesort+lsourcesort
         ltargetsort = 2*ntarget
         ichargesort = itargetsort+ltargetsort
-        lchargesort = 2*nsource
+        lchargesort = 2*nsource*nd
         idipvecsort = ichargesort+lchargesort
         if (ifdipole.eq.1) then
           ldipvec = 2*nsource
-          ldipstr = 2*nsource
+          ldipstr = 2*nsource*nd
         else
           ldipvec = 2
           ldipstr = 2
@@ -446,40 +442,40 @@ c
 c       ... allocate the potential and gradient arrays
 c
         ipot = lused7
-        lpot = 2*nsource
+        lpot = 2*nsource*nd
         lused7=lused7+lpot
-c       
+c
         igrad = lused7
         if( ifgrad .eq. 1) then
-        lgrad = 2*nsource
+        lgrad = 2*nsource*nd
         else
         lgrad=4
         endif
         lused7=lused7+lgrad
-c      
+c
         ihess = lused7
         if( ifhess .eq. 1) then
-        lhess = 2*nsource
+        lhess = 2*nsource*nd
         else
         lhess=6
         endif
         lused7=lused7+lhess
-c      
+c
         ipottarg = lused7
-        lpottarg = 2*ntarget
+        lpottarg = 2*ntarget*nd
         lused7=lused7+lpottarg
-c       
+c
         igradtarg = lused7
         if( ifgradtarg .eq. 1) then
-        lgradtarg = 2*ntarget
+        lgradtarg = 2*ntarget*nd
         else
         lgradtarg=4
         endif
         lused7=lused7+lgradtarg
-c      
+c
         ihesstarg = lused7
         if( ifhesstarg .eq. 1) then
-        lhesstarg = 2*ntarget
+        lhesstarg = 2*ntarget*nd
         else
         lhesstarg=6
         endif
@@ -494,6 +490,7 @@ c
         do i = 0,nlev
            bsize(i)=size/2.0d0**i
            call l2dterms(epsfmm, nterms(i), ier)
+ccc           nterms(i) = ((nterms(i)+3)/4)*4
            if (nterms(i).gt. nmax .and. i.ge. 2) nmax = nterms(i)
         enddo
 c
@@ -513,9 +510,9 @@ c     imptemp is pointer for single expansion (dimensioned by nmax)
 c
 c       ... allocate iaddr and temporary arrays
 c
-        iiaddr = lused7 
+        iiaddr = lused7
         imptemp = iiaddr + 2*nboxes
-        lmptemp = (2*nmax+1)*2
+        lmptemp = (2*nmax+1)*2*nd
         lused7 = imptemp + lmptemp
         allocate(w(lused7),stat=ier)
         if (ier.ne.0) then
@@ -529,8 +526,8 @@ c     reorder sources, targets so that each box holds
 c     contiguous list of source/target numbers.
 
 c
-        call c2dreorder(nsource,source,ifcharge,charge,wlists(iisource),
-     $     ifdipole,dipstr,
+        call c2dreorder_nd(nd,nsource,source,ifcharge,charge,
+     $     wlists(iisource),ifdipole,dipstr,
      1     w(isourcesort),w(ichargesort),w(idipstrsort)) 
 c       
         call l2dreordertarg(ntarget,target,wlists(iitarget),
@@ -550,7 +547,8 @@ c     allocate memory need by multipole, local expansions at all
 c     levels
 c     irmlexp is pointer for workspace need by various fmm routines,
 c
-        call l2dmpalloc(wlists(iwlists),w(iiaddr),nboxes,lmptot,nterms)
+        call l2dmpalloc(nd,wlists(iwlists),w(iiaddr),nboxes,lmptot,
+     $     nterms)
 c
         if(ifprint .eq. 1) call prinf(' lmptot is *',lmptot,1)
 c       
@@ -582,7 +580,7 @@ c
 c
         t1=second()
 C$        t1=omp_get_wtime()
-        call cfmm2dparttargmain(ier,iprec,
+        call cfmm2dparttargmain(ier,iprec,nd,
      $     ifevalfar,ifevalloc,
      $     nsource,w(isourcesort),wlists(iisource),
      $     ifcharge,w(ichargesort),
@@ -613,19 +611,22 @@ c
 c       
 ccc        call prin2('after w=*', w(1+lused7-100), 2*100)
 c
-        if(ifpot .eq. 1) 
-     $     call l2dpsort(nsource,wlists(iisource),w(ipot),pot)
-        if(ifgrad .eq. 1) 
-     $     call l2dpsort(nsource,wlists(iisource),w(igrad),grad)
-        if(ifhess .eq. 1) 
-     $     call l2dpsort(nsource,wlists(iisource),w(ihess),hess)
+        if(ifpot .eq. 1)
+     $     call l2dpsort(nd,nsource,wlists(iisource),w(ipot),pot)
+        if(ifgrad .eq. 1)
+     $     call l2dpsort(nd,nsource,wlists(iisource),w(igrad),grad)
+        if(ifhess .eq. 1)
+     $     call l2dpsort(nd,nsource,wlists(iisource),w(ihess),hess)
 c
         if(ifpottarg .eq. 1 )
-     $     call l2dpsort(ntarget,wlists(iitarget),w(ipottarg),pottarg)
-        if(ifgradtarg .eq. 1) 
-     $     call l2dpsort(ntarget,wlists(iitarget),w(igradtarg),gradtarg)
-        if(ifhesstarg .eq. 1) 
-     $     call l2dpsort(ntarget,wlists(iitarget),w(ihesstarg),hesstarg)
+     $     call l2dpsort(nd,ntarget,wlists(iitarget),w(ipottarg),
+     $     pottarg)
+        if(ifgradtarg .eq. 1)
+     $     call l2dpsort(nd,ntarget,wlists(iitarget),w(igradtarg),
+     $     gradtarg)
+        if(ifhesstarg .eq. 1)
+     $     call l2dpsort(nd,ntarget,wlists(iitarget),w(ihesstarg),
+     $     hesstarg)
 c       
         return
         end
@@ -634,7 +635,7 @@ c
 c
 c
 c
-        subroutine cfmm2dparttargmain(ier,iprec,
+        subroutine cfmm2dparttargmain(ier,iprec,nd,
      $     ifevalfar,ifevalloc,
      $     nsource,sourcesort,isource,
      $     ifcharge,chargesort,
@@ -648,20 +649,20 @@ c
         implicit real *8 (a-h,o-z)
         real *8 sourcesort(2,*)
         integer isource(*)
-        complex *16 chargesort(*)
-        complex *16 dipstrsort(*)
+        complex *16 chargesort(nd,*)
+        complex *16 dipstrsort(nd,*)
         complex *16 ima
-        complex *16 pot(*)
-        complex *16 grad(*)
-        complex *16 hess(*)
+        complex *16 pot(nd,*)
+        complex *16 grad(nd,*)
+        complex *16 hess(nd,*)
         real *8 targetsort(2,*)
         integer itarget(*)
-        complex *16 pottarg(*)
-        complex *16 gradtarg(*)
-        complex *16 hesstarg(*)
+        complex *16 pottarg(nd,*)
+        complex *16 gradtarg(nd,*)
+        complex *16 hesstarg(nd,*)
         real *8 wlists(*)
         integer iaddr(2,nboxes)
-        real *8 rmlexp(*)
+        complex *16 rmlexp(*)
         complex *16 mptemp(lmptemp)
         real *8 timeinfo(10)
         real *8 center(3)
@@ -669,7 +670,7 @@ c
         real *8 scale(0:200)
         real *8 bsize(0:200)
         integer nterms(0:200)
-        integer list(10 000)
+        integer list(10000)
         complex *16 ptemp,gtemp,htemp
         integer box(15)
         real *8 center0(2),corners0(2,4)
@@ -691,27 +692,31 @@ c
 c
 c       ... set the potential and gradient to zero
 c
-C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i)
+C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i,idim)
         do i=1,nsource
-        if( ifpot .eq. 1) pot(i)=0
-        if( ifgrad .eq. 1) then
-           grad(i)=0
-        endif
-        if( ifhess .eq. 1) then
-           hess(i)=0
-        endif
+        do idim=1,nd
+          if( ifpot .eq. 1) pot(idim,i)=0
+          if( ifgrad .eq. 1) then
+             grad(idim,i)=0
+          endif
+          if( ifhess .eq. 1) then
+             hess(idim,i)=0
+          endif
+        enddo
         enddo
 C$OMP END PARALLEL DO
-c       
-C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i)
+c
+C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i,idim)
         do i=1,ntarget
-        if( ifpottarg .eq. 1) pottarg(i)=0
-        if( ifgradtarg .eq. 1) then
-           gradtarg(i)=0
-        endif
-        if( ifhesstarg .eq. 1) then
-           hesstarg(i)=0
-        endif
+        do idim=1,nd
+          if( ifpottarg .eq. 1) pottarg(idim,i)=0
+          if( ifgradtarg .eq. 1) then
+             gradtarg(idim,i)=0
+          endif
+          if( ifhesstarg .eq. 1) then
+             hesstarg(idim,i)=0
+          endif
+        enddo
         enddo
 C$OMP END PARALLEL DO
 c
@@ -736,14 +741,14 @@ cccC$OMP$NUM_THREADS(4)
         call d2tgetb(ier,ibox,box,center0,corners0,wlists)
         level=box(1)
         if( level .ge. 2 ) then
-        call l2dzero(rmlexp(iaddr(1,ibox)),nterms(level))
-        call l2dzero(rmlexp(iaddr(2,ibox)),nterms(level))
+        call l2dzero(nd,rmlexp(iaddr(1,ibox)),nterms(level))
+        call l2dzero(nd,rmlexp(iaddr(2,ibox)),nterms(level))
         endif
         enddo
 C$OMP END PARALLEL DO
 c
 c
-        if(ifprint .ge. 1) 
+        if(ifprint .ge. 1)
      $     call prinf('=== STEP 1 (form mp) ====*',i,0)
         t1=second()
 C$        t1=omp_get_wtime()
@@ -795,26 +800,26 @@ c
 	    radius = radius + (corners0(2,1) - center0(2))**2
 	    radius = sqrt(radius)
 c
-            call l2dzero(rmlexp(iaddr(1,ibox)),nterms(level))
+            call l2dzero(nd,rmlexp(iaddr(1,ibox)),nterms(level))
             if_use_trunc = 0
 
             if( ifcharge .eq. 1 ) then
-            call l2dformmp(ier,scale(level),sourcesort(1,box(9)),
-     1  	chargesort(box(9)),npts,center0,nterms(level),
-     2          rmlexp(iaddr(1,ibox)))        
+            call l2dformmp(ier,nd,scale(level),sourcesort(1,box(9)),
+     1  	chargesort(1,box(9)),npts,center0,nterms(level),
+     2          rmlexp(iaddr(1,ibox)))
             endif
-c 
+c
 cc               call prin2('after formmp, rmlexp=*',
 cc     $            rmlexp(iaddr(1,ibox)),2*(2*nterms(level)+1))
 c
             if (ifdipole .eq. 1 ) then
-               call l2dzero(mptemp,nterms(level))
-               call l2dformmp_dp(ier,scale(level),
+               call l2dzero(nd,mptemp,nterms(level))
+               call l2dformmp_dp(ier,nd,scale(level),
      $           sourcesort(1,box(9)),
-     1           dipstrsort(box(9)),
+     1           dipstrsort(1,box(9)),
      $           npts,center0,nterms(level),
      2           mptemp)
-              call l2dadd(mptemp,rmlexp(iaddr(1,ibox)),nterms(level))
+              call l2dadd(nd,mptemp,rmlexp(iaddr(1,ibox)),nterms(level))
             endif
          endif
 c
@@ -888,22 +893,22 @@ c
                if_use_trunc = 0
 c
                if( ifcharge .eq. 1 ) then
-               call l2dformta_add(ier,scale(level0),
+               call l2dformta_add(ier,nd,scale(level0),
      $            sourcesort(1,box1(9)),
-     1            chargesort(box1(9)),npts,center0,nterms(level0),
+     1            chargesort(1,box1(9)),npts,center0,nterms(level0),
      2            rmlexp(iaddr(2,ibox)))
                endif
 c
                if( ifdipole .eq. 1 ) then
-               call l2dformta_dp_add(ier,scale(level0),
-     1            sourcesort(1,box1(9)),dipstrsort(box1(9)),
+               call l2dformta_dp_add(ier,nd,scale(level0),
+     1            sourcesort(1,box1(9)),dipstrsort(1,box1(9)),
      2            npts,center0,
      3            nterms(level0),rmlexp(iaddr(2,ibox)))
                endif
 c
             else
 
-            call cfmm2dpart_direct(box1,box,sourcesort,
+            call cfmm2dpart_direct(nd,box1,box,sourcesort,
      $         ifcharge,chargesort,ifdipole,dipstrsort,
      $         ifpot,pot,ifgrad,grad,ifhess,hess,
      $         targetsort,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -927,8 +932,8 @@ c
         if (ifpot.eq.1) ifprune_list2 = 0
         if (ifgrad.eq.1) ifprune_list2 = 0
         if (ifhess.eq.1) ifprune_list2 = 0
-        call lfmm2d_list2
-     $     (bsize,nlev,laddr,scale,nterms,rmlexp,iaddr,epsfmm,
+        call lfmm2d_list2(nd,
+     $     bsize,nlev,laddr,scale,nterms,rmlexp,iaddr,epsfmm,
      $     timeinfo,wlists,mptemp,lmptemp,
      $     ifprune_list2)
 c
@@ -986,25 +991,25 @@ c
 c
             if (ifdirect4 .eq. 0) then
 
-            if( box(10) .gt. 0 ) 
-     $         call c2dmpevalall(scale(level),center1,
+            if( box(10) .gt. 0 )
+     $         call c2dmpevalall(nd,scale(level),center1,
      $         rmlexp(iaddr(1,jbox)),nterms(level),
      $         sourcesort(1,box(9)),box(10),
-     $         ifpot,pot(box(9)),
-     $         ifgrad,grad(box(9)),
-     $         ifhess,hess(box(9)))
+     $         ifpot,pot(1,box(9)),
+     $         ifgrad,grad(1,box(9)),
+     $         ifhess,hess(1,box(9)))
 
-            if( box(12) .gt. 0 ) 
-     $         call c2dmpevalall(scale(level),center1,
+            if( box(12) .gt. 0 )
+     $         call c2dmpevalall(nd,scale(level),center1,
      $         rmlexp(iaddr(1,jbox)),nterms(level),
      $         targetsort(1,box(11)),box(12),
-     $         ifpottarg,pottarg(box(11)),
-     $         ifgradtarg,gradtarg(box(11)),
-     $         ifhesstarg,hesstarg(box(11)))
+     $         ifpottarg,pottarg(1,box(11)),
+     $         ifgradtarg,gradtarg(1,box(11)),
+     $         ifhesstarg,hesstarg(1,box(11)))
 
             else
-            
-            call cfmm2dpart_direct(box1,box,sourcesort,
+
+            call cfmm2dpart_direct(nd,box1,box,sourcesort,
      $         ifcharge,chargesort,ifdipole,dipstrsort,
      $         ifpot,pot,ifgrad,grad,ifhess,hess,
      $         targetsort,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -1063,18 +1068,18 @@ c
         if (level .ge. 2) then
 
         if( box(10) .gt. 0 )
-     $     call c2dtaevalall(scale(level),center0,
+     $     call c2dtaevalall(nd,scale(level),center0,
      $     rmlexp(iaddr(2,ibox)),nterms(level),
      $     sourcesort(1,box(9)),box(10),
-     $     ifpot,pot(box(9)),ifgrad,grad(box(9)),
-     $     ifhess,hess(box(9)))
+     $     ifpot,pot(1,box(9)),ifgrad,grad(1,box(9)),
+     $     ifhess,hess(1,box(9)))
 
         if( box(12) .gt. 0 )
-     $     call c2dtaevalall(scale(level),center0,
+     $     call c2dtaevalall(nd,scale(level),center0,
      $     rmlexp(iaddr(2,ibox)),nterms(level),
      $     targetsort(1,box(11)),box(12),
-     $     ifpottarg,pottarg(box(11)),ifgradtarg,gradtarg(box(11)),
-     $     ifhesstarg,hesstarg(box(11)))
+     $     ifpottarg,pottarg(1,box(11)),ifgradtarg,gradtarg(1,box(11)),
+     $     ifhesstarg,hesstarg(1,box(11)))
 
         endif
 c
@@ -1130,7 +1135,7 @@ c
 c
 c       ... evaluate self interactions
 c
-        call cfmm2dpart_direct_self_sym(box,sourcesort,
+        call cfmm2dpart_direct_self_sym(nd,box,sourcesort,
      $     ifcharge,chargesort,ifdipole,dipstrsort,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     targetsort,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -1155,8 +1160,8 @@ c
 c       ... prune all sourceless boxes
 c
          if( box1(10) .eq. 0 ) goto 6203
-c    
-            call cfmm2dpart_direct(box1,box,sourcesort,
+c
+            call cfmm2dpart_direct(nd,box1,box,sourcesort,
      $         ifcharge,chargesort,ifdipole,dipstrsort,
      $         ifpot,pot,ifgrad,grad,ifhess,hess,
      $         targetsort,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -1204,7 +1209,7 @@ c
 c
 c
 c
-        subroutine cfmm2dpart_direct_self(box,
+        subroutine cfmm2dpart_direct_self(nd,box,
      $     source,ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -1214,42 +1219,46 @@ c
         integer box(15),box1(15)
 c
         real *8 source(2,*)
-        complex *16 charge(*),dipstr(*)
+        complex *16 charge(nd,*),dipstr(nd,*)
         real *8 target(2,*)
 c
-        complex *16 pot(*),grad(*),hess(*)
-        complex *16 pottarg(*),gradtarg(*),hesstarg(*)
+        complex *16 pot(nd,*),grad(nd,*),hess(nd,*)
+        complex *16 pottarg(nd,*),gradtarg(nd,*),hesstarg(nd,*)
         complex *16 ptemp,gtemp,htemp
 c
 c
         do 6160 j=box(9),box(9)+box(10)-1
         do 6150 i=box(9),box(9)+box(10)-1
             if (i .eq. j) goto 6150
+            do idim=1,nd
             call cpotgrad2d_sdp(source(1,i),
-     $         ifcharge,charge(i),ifdipole,dipstr(i),
+     $         ifcharge,charge(idim,i),ifdipole,dipstr(idim,i),
      1         source(1,j),ifpot,ptemp,ifgrad,gtemp,ifhess,htemp)
-            if (ifpot .eq. 1) pot(j)=pot(j)+ptemp
+            if (ifpot .eq. 1) pot(idim,j)=pot(idim,j)+ptemp
             if (ifgrad .eq. 1) then
-               grad(j)=grad(j)+gtemp
+               grad(idim,j)=grad(idim,j)+gtemp
             endif
             if (ifhess .eq. 1) then
-               hess(j)=hess(j)+htemp
+               hess(idim,j)=hess(idim,j)+htemp
             endif
+            enddo
  6150   continue
  6160   continue
         do j=box(11),box(11)+box(12)-1
         do i=box( 9),box( 9)+box(10)-1
+            do idim=1,nd
             call cpotgrad2d_sdp(source(1,i),
-     $         ifcharge,charge(i),ifdipole,dipstr(i),
+     $         ifcharge,charge(idim,i),ifdipole,dipstr(idim,i),
      1         target(1,j),ifpottarg,ptemp,ifgradtarg,gtemp,
      $         ifhesstarg,htemp)
-            if (ifpottarg .eq. 1) pottarg(j)=pottarg(j)+ptemp
+            if (ifpottarg .eq. 1) pottarg(idim,j)=pottarg(idim,j)+ptemp
             if (ifgradtarg .eq. 1) then
-               gradtarg(j)=gradtarg(j)+gtemp
+               gradtarg(idim,j)=gradtarg(idim,j)+gtemp
             endif
             if (ifhesstarg .eq. 1) then
-               hesstarg(j)=hesstarg(j)+htemp
+               hesstarg(idim,j)=hesstarg(idim,j)+htemp
             endif
+            enddo
         enddo
         enddo
 c
@@ -1260,7 +1269,7 @@ c
 c
 c
 c
-        subroutine cfmm2dpart_direct_self_sym(box,
+        subroutine cfmm2dpart_direct_self_sym(nd,box,
      $     source,ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -1270,11 +1279,11 @@ c
         integer box(15),box1(15)
 c
         real *8 source(2,*)
-        complex *16 charge(*),dipstr(*)
+        complex *16 charge(nd,*),dipstr(nd,*)
         real *8 target(2,*)
 c
-        complex *16 pot(*),grad(*),hess(*)
-        complex *16 pottarg(*),gradtarg(*),hesstarg(*)
+        complex *16 pot(nd,*),grad(nd,*),hess(nd,*)
+        complex *16 pottarg(nd,*),gradtarg(nd,*),hesstarg(nd,*)
         complex *16 ptemp,gtemp,htemp
         complex *16 ptemp1,gtemp1,htemp1
         complex *16 ptemp2,gtemp2,htemp2
@@ -1283,43 +1292,48 @@ c
         do 6160 j=box(9),box(9)+box(10)-1
         do 6150 i=box(9),box(9)+box(10)-1
             if (i .ge. j) goto 6150
+            do idim=1,nd
 c            call cpotgrad2d_sdp_sym(source(1,i),source(1,j),
-c     $         ifcharge,charge(i),charge(j),
-c     $         ifdipole,dipstr(i),dipstr(j),
+c     $         ifcharge,charge(idim,i),charge(idim,j),
+c     $         ifdipole,dipstr(idim,i),dipstr(idim,j),
 c     1         ifpot,ptemp1,ptemp2,
 c     $         ifgrad,gtemp1,gtemp2,ifhess,htemp1,htemp2)
-c            if (ifpot .eq. 1) then 
-c               pot(i)=pot(i)+ptemp1
-c               pot(j)=pot(j)+ptemp2
+c            if (ifpot .eq. 1) then
+c               pot(idim,i)=pot(idim,i)+ptemp1
+c               pot(idim,j)=pot(idim,j)+ptemp2
 c            endif
 c            if (ifgrad .eq. 1) then
-c               grad(i)=grad(i)+gtemp1
-c               grad(j)=grad(j)+gtemp2
+c               grad(idim,i)=grad(idim,i)+gtemp1
+c               grad(idim,j)=grad(idim,j)+gtemp2
 c            endif
 c            if (ifhess .eq. 1) then
-c               hess(i)=hess(i)+htemp1
-c               hess(j)=hess(j)+htemp2
+c               hess(idim,i)=hess(idim,i)+htemp1
+c               hess(idim,j)=hess(idim,j)+htemp2
 c            endif
             call cpotgrad2d_sdp_sym_add(source(1,i),source(1,j),
-     $         ifcharge,charge(i),charge(j),
-     $         ifdipole,dipstr(i),dipstr(j),
-     1         ifpot,pot(i),pot(j),
-     $         ifgrad,grad(i),grad(j),ifhess,hess(i),hess(j))
+     $         ifcharge,charge(idim,i),charge(idim,j),
+     $         ifdipole,dipstr(idim,i),dipstr(idim,j),
+     1         ifpot,pot(idim,i),pot(idim,j),
+     $         ifgrad,grad(idim,i),grad(idim,j),
+     $         ifhess,hess(idim,i),hess(idim,j))
+            enddo
  6150   continue
  6160   continue
         do j=box(11),box(11)+box(12)-1
         do i=box( 9),box( 9)+box(10)-1
+            do idim=1,nd
             call cpotgrad2d_sdp(source(1,i),
-     $         ifcharge,charge(i),ifdipole,dipstr(i),
+     $         ifcharge,charge(idim,i),ifdipole,dipstr(idim,i),
      1         target(1,j),ifpottarg,ptemp,ifgradtarg,gtemp,
      $         ifhesstarg,htemp)
-            if (ifpottarg .eq. 1) pottarg(j)=pottarg(j)+ptemp
+            if (ifpottarg .eq. 1) pottarg(idim,j)=pottarg(idim,j)+ptemp
             if (ifgradtarg .eq. 1) then
-               gradtarg(j)=gradtarg(j)+gtemp
+               gradtarg(idim,j)=gradtarg(idim,j)+gtemp
             endif
             if (ifhesstarg .eq. 1) then
-               hesstarg(j)=hesstarg(j)+htemp
+               hesstarg(idim,j)=hesstarg(idim,j)+htemp
             endif
+            enddo
         enddo
         enddo
 c
@@ -1330,7 +1344,7 @@ c
 c
 c
 c
-        subroutine cfmm2dpart_direct(box,box1,
+        subroutine cfmm2dpart_direct(nd,box,box1,
      $     source,ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -1340,40 +1354,34 @@ c
         integer box(15),box1(15)
 c
         real *8 source(2,*)
-        complex *16 charge(*),dipstr(*)
+        complex *16 charge(nd,*),dipstr(nd,*)
         real *8 target(2,*)
 c
-        complex *16 pot(*),grad(*),hess(*)
-        complex *16 pottarg(*),gradtarg(*),hesstarg(*)
+        complex *16 pot(nd,*),grad(nd,*),hess(nd,*)
+        complex *16 pottarg(nd,*),gradtarg(nd,*),hesstarg(nd,*)
         complex *16 ptemp,gtemp,htemp
 c
 c
         do j=box1(9),box1(9)+box1(10)-1
-        call cpotgrad2dall_sdp
-     $     (source(1,box(9)),box(10),ifcharge,charge(box(9)),
-     $     ifdipole,dipstr(box(9)),source(1,j),
-     1     ifpot,ptemp,ifgrad,gtemp,ifhess,htemp)
-        if (ifpot .eq. 1) pot(j)=pot(j)+ptemp
-        if (ifgrad .eq. 1) then
-          grad(j)=grad(j)+gtemp
-        endif
-        if (ifhess .eq. 1) then
-          hess(j)=hess(j)+htemp
-        endif
+          do i=box(9),box(9)+box(10)-1
+            do idim=1,nd
+            call cpotgrad2d_sdp_add(source(1,i),
+     $         ifcharge,charge(idim,i),ifdipole,dipstr(idim,i),
+     1         source(1,j),ifpot,pot(idim,j),ifgrad,grad(idim,j),
+     $         ifhess,hess(idim,j))
+            enddo
+          enddo
         enddo
 c
         do j=box1(11),box1(11)+box1(12)-1
-        call cpotgrad2dall_sdp
-     $     (source(1,box(9)),box(10),ifcharge,charge(box(9)),
-     $     ifdipole,dipstr(box(9)),target(1,j),
-     $     ifpottarg,ptemp,ifgradtarg,gtemp,ifhesstarg,htemp)
-        if (ifpottarg .eq. 1) pottarg(j)=pottarg(j)+ptemp
-        if (ifgradtarg .eq. 1) then
-          gradtarg(j)=gradtarg(j)+gtemp
-        endif
-        if (ifhesstarg .eq. 1) then
-          hesstarg(j)=hesstarg(j)+htemp
-        endif
+          do i=box(9),box(9)+box(10)-1
+            do idim=1,nd
+            call cpotgrad2d_sdp_add(source(1,i),
+     $         ifcharge,charge(idim,i),ifdipole,dipstr(idim,i),
+     1         target(1,j),ifpottarg,pottarg(idim,j),
+     $         ifgradtarg,gradtarg(idim,j),ifhesstarg,hesstarg(idim,j))
+            enddo
+          enddo
         enddo
 c       
         return
@@ -1383,7 +1391,7 @@ c
 c
 c
 c
-        subroutine c2dpartdirect(nsource,
+        subroutine c2dpartdirect_nd(nd,nsource,
      $     source,ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     ntarget,target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -1451,82 +1459,84 @@ c
 c
 c
         real *8 source(2,*)
-        complex *16 charge(*),dipstr(*)
+        complex *16 charge(nd,*),dipstr(nd,*)
         real *8 target(2,*)
 c
-        complex *16 pot(*),grad(*),hess(*)
-        complex *16 pottarg(*),gradtarg(*),hesstarg(*)
+        complex *16 pot(nd,*),grad(nd,*),hess(nd,*)
+        complex *16 pottarg(nd,*),gradtarg(nd,*),hesstarg(nd,*)
         complex *16 ptemp,gtemp,htemp
 c
 c
         do i=1,nsource
-        if( ifpot .eq. 1) pot(i)=0
+        do idim=1,nd
+        if( ifpot .eq. 1) pot(idim,i)=0
         if( ifgrad .eq. 1) then
-           grad(i)=0
-           grad(i)=0
+           grad(idim,i)=0
         endif
         if( ifhess .eq. 1) then
-           hess(i)=0
-           hess(i)=0
-           hess(i)=0
+           hess(idim,i)=0
         endif
         enddo
-c       
+        enddo
+c
         do i=1,ntarget
-        if( ifpottarg .eq. 1) pottarg(i)=0
+        do idim=1,nd
+        if( ifpottarg .eq. 1) pottarg(idim,i)=0
         if( ifgradtarg .eq. 1) then
-           gradtarg(i)=0
-           gradtarg(i)=0
+           gradtarg(idim,i)=0
         endif
         if( ifhesstarg .eq. 1) then
-           hesstarg(i)=0
-           hesstarg(i)=0
-           hesstarg(i)=0
+           hesstarg(idim,i)=0
         endif
+        enddo
         enddo
 c
         if( ifpot .eq. 1 .or. ifgrad .eq. 1 .or. ifhess .eq. 1) then
 C$OMP PARALLEL DO DEFAULT(SHARED)
-C$OMP$PRIVATE(i,j,ptemp,gtemp,htemp) 
+C$OMP$PRIVATE(idim,i,j,ptemp,gtemp,htemp)
 cccC$OMP$SCHEDULE(DYNAMIC)
-cccC$OMP$NUM_THREADS(4) 
+cccC$OMP$NUM_THREADS(4)
         do 6160 j=1,nsource
         do 6150 i=1,nsource
             if (i .eq. j) goto 6150
+            do idim=1,nd
             call cpotgrad2d_sdp(source(1,i),
-     $         ifcharge,charge(i),ifdipole,dipstr(i),
+     $         ifcharge,charge(idim,i),ifdipole,dipstr(idim,i),
      1         source(1,j),ifpot,ptemp,ifgrad,gtemp,ifhess,htemp)
-            if (ifpot .eq. 1) pot(j)=pot(j)+ptemp
+            if (ifpot .eq. 1) pot(idim,j)=pot(idim,j)+ptemp
             if (ifgrad .eq. 1) then
-               grad(j)=grad(j)+gtemp
+               grad(idim,j)=grad(idim,j)+gtemp
             endif
             if (ifhess .eq. 1) then
-               hess(j)=hess(j)+htemp
+               hess(idim,j)=hess(idim,j)+htemp
             endif
+            enddo
  6150   continue
  6160   continue
 C$OMP END PARALLEL DO
         endif
 c
-        if( ifpottarg .eq. 1 .or. ifgradtarg .eq. 1 
+        if( ifpottarg .eq. 1 .or. ifgradtarg .eq. 1
      $      .or. ifhesstarg .eq. 1) then
 C$OMP PARALLEL DO DEFAULT(SHARED)
-C$OMP$PRIVATE(i,j,ptemp,gtemp,htemp) 
+C$OMP$PRIVATE(idim,i,j,ptemp,gtemp,htemp)
 cccC$OMP$SCHEDULE(DYNAMIC)
-cccC$OMP$NUM_THREADS(4) 
+cccC$OMP$NUM_THREADS(4)
         do j=1,ntarget
         do i=1,nsource
+            do idim=1,nd
             call cpotgrad2d_sdp(source(1,i),
-     $         ifcharge,charge(i),ifdipole,dipstr(i),
+     $         ifcharge,charge(idim,i),ifdipole,dipstr(idim,i),
      1         target(1,j),ifpottarg,ptemp,ifgradtarg,gtemp,
      $         ifhesstarg,htemp)
-            if (ifpottarg .eq. 1) pottarg(j)=pottarg(j)+ptemp
+            if (ifpottarg .eq. 1) pottarg(idim,j)=pottarg(idim,j)+ptemp
             if (ifgradtarg .eq. 1) then
-               gradtarg(j)=gradtarg(j)+gtemp
+               gradtarg(idim,j)=gradtarg(idim,j)+gtemp
             endif
             if (ifhesstarg .eq. 1) then
-               hesstarg(j)=hesstarg(j)+htemp
+               hesstarg(idim,j)=hesstarg(idim,j)+htemp
             endif
+            enddo
         enddo
         enddo
 C$OMP END PARALLEL DO
@@ -1539,27 +1549,431 @@ c
 c
 c
 c
-        subroutine c2dreorder(nsource,source,
+        subroutine c2dreorder_nd(nd,nsource,source,
      $     ifcharge,charge,isource,ifdipole,
-     1     dipstr,sourcesort,chargesort,dipstrsort) 
+     1     dipstr,sourcesort,chargesort,dipstrsort)
         implicit real *8 (a-h,o-z)
         real *8 source(2,*),sourcesort(2,*)
         integer isource(*)
-        complex *16 charge(*),chargesort(*),dipstr(*),dipstrsort(*)
-c       
+        complex *16 charge(nd,*),chargesort(nd,*)
+        complex *16 dipstr(nd,*),dipstrsort(nd,*)
+c
 ccc        call prinf('nsource=*',nsource,1)
-C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i)
+C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i,idim)
         do i = 1,nsource
         sourcesort(1,i) = source(1,isource(i))
         sourcesort(2,i) = source(2,isource(i))
         if( ifcharge .ge. 1 ) then
-        chargesort(i) = charge(isource(i))
+          do idim = 1,nd
+            chargesort(idim,i) = charge(idim,isource(i))
+          enddo
         endif
         if (ifdipole .ge. 1) then
-        dipstrsort(i) = dipstr(isource(i))
+          do idim = 1,nd
+            dipstrsort(idim,i) = dipstr(idim,isource(i))
+          enddo
         endif
         enddo
 C$OMP END PARALLEL DO
+        return
+        end
+c
+c
+c
+c
+c
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+c     Tree reuse API - build tree once, evaluate multiple times
+c
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+c
+c
+        subroutine cfmm2dpart_tree_build(ier,iprec,
+     $     nsource,source,ntarget,target,tree_handle)
+        use fmm2d_tree_module
+        implicit real *8 (a-h,o-z)
+        integer tree_handle
+c
+c       Build FMM tree structure (geometry-dependent only, NO nd).
+c       Tree can be reused for multiple evaluations with different
+c       nd values and charge distributions.
+c
+c       INPUT:
+c         iprec - FMM precision flag (see cfmm2dparttarg_nd docs)
+c         nsource - number of sources
+c         source(2,nsource) - source locations
+c         ntarget - number of targets
+c         target(2,ntarget) - target locations
+c
+c       OUTPUT:
+c         ier - error code (0=success, 1=out of tree handles, 4=tree alloc failed)
+c         tree_handle - integer handle to store tree (pass to tree_eval and tree_free)
+c
+        real *8 source(2,*)
+        real *8 target(2,*)
+        type(fmm2d_tree_data), pointer :: tree
+        integer laddr_tmp(2,0:200)
+        real *8 scale_tmp(0:200)
+        real *8 bsize_tmp(0:200)
+        integer nterms_tmp(0:200)
+c
+        ier = 0
+c
+c       Allocate tree handle
+c
+        call fmm2d_tree_alloc(tree_handle,ier)
+        if (ier .ne. 0) then
+          call prinf(' cannot allocate tree handle *',ier,1)
+          return
+        endif
+c
+c       Get pointer to tree data
+c
+        call fmm2d_tree_get(tree_handle,tree,ier)
+        if (ier .ne. 0) then
+          return
+        endif
+c
+c       Store geometry parameters
+c
+        tree%nsource = nsource
+        tree%ntarget = ntarget
+        tree%iprec = iprec
+c
+c       Set FMM tolerance based on iprec
+c
+        if( iprec .eq. -2 ) tree%epsfmm=.5d-0
+        if( iprec .eq. -1 ) tree%epsfmm=.5d-1
+        if( iprec .eq. 0 ) tree%epsfmm=.5d-2
+        if( iprec .eq. 1 ) tree%epsfmm=.5d-3
+        if( iprec .eq. 2 ) tree%epsfmm=.5d-6
+        if( iprec .eq. 3 ) tree%epsfmm=.5d-9
+        if( iprec .eq. 4 ) tree%epsfmm=.5d-12
+        if( iprec .eq. 5 ) tree%epsfmm=.5d-15
+        if( iprec .eq. 6 ) tree%epsfmm=0
+c
+c       Set box subdivision criterion
+c
+        if( iprec .eq. -2 ) tree%nbox=3
+        if( iprec .eq. -1 ) tree%nbox=5
+        if( iprec .eq. 0 ) tree%nbox=8
+        if( iprec .eq. 1 ) tree%nbox=10
+        if( iprec .eq. 2 ) tree%nbox=15
+        if( iprec .eq. 3 ) tree%nbox=20
+        if( iprec .eq. 4 ) tree%nbox=25
+        if( iprec .eq. 5 ) tree%nbox=45
+        if( iprec .eq. 6 ) tree%nbox=nsource+ntarget
+c
+c       Build quad-tree structure
+c
+        ntot = 100*(nsource+ntarget)+10000
+        do ii = 1,10
+           allocate (tree%wlists(ntot),stat=ier)
+           if (ier .ne. 0) then
+             ier = 4
+             return
+           endif
+           call lfmm2dparttree(ier,iprec,
+     $        nsource,source,ntarget,target,
+     $        tree%nbox,tree%epsfmm,tree%iisource,tree%iitarget,
+     $        tree%iwlists,tree%lwlists,
+     $        tree%nboxes,laddr_tmp,tree%nlev,tree%center,tree%size,
+     $        tree%wlists,ntot,lused7)
+           if (ier.ne.0) then
+              deallocate(tree%wlists)
+              ntot = ntot*1.5
+           else
+             goto 1200
+           endif
+        enddo
+1200    continue
+        if (ier.ne.0) then
+           ier = 4
+           call fmm2d_tree_dealloc(tree_handle,ier2)
+           return
+        endif
+c
+c       Allocate and copy laddr (tree%nlev may be > 200 is pathological)
+c
+        allocate(tree%laddr(2,0:tree%nlev),stat=ier)
+        if (ier .ne. 0) then
+          ier = 4
+          call fmm2d_tree_dealloc(tree_handle,ier2)
+          return
+        endif
+        do i = 0,tree%nlev
+          tree%laddr(1,i) = laddr_tmp(1,i)
+          tree%laddr(2,i) = laddr_tmp(2,i)
+        enddo
+c
+c       Compute scale, bsize, nterms arrays (geometry-dependent)
+c
+        allocate(tree%scale(0:tree%nlev),stat=ier)
+        if (ier .ne. 0) then
+          ier = 4
+          call fmm2d_tree_dealloc(tree_handle,ier2)
+          return
+        endif
+        allocate(tree%bsize(0:tree%nlev),stat=ier)
+        if (ier .ne. 0) then
+          ier = 4
+          call fmm2d_tree_dealloc(tree_handle,ier2)
+          return
+        endif
+        allocate(tree%nterms(0:tree%nlev),stat=ier)
+        if (ier .ne. 0) then
+          ier = 4
+          call fmm2d_tree_dealloc(tree_handle,ier2)
+          return
+        endif
+c
+        do i = 0,tree%nlev
+          boxsize = abs((tree%size/2.0**i))
+          tree%scale(i) = boxsize
+          tree%bsize(i) = tree%size/2.0d0**i
+          call l2dterms(tree%epsfmm, tree%nterms(i), ier)
+        enddo
+c
+        return
+        end
+c
+c
+c
+c
+c
+        subroutine cfmm2dpart_tree_free(tree_handle)
+        use fmm2d_tree_module
+        implicit real *8 (a-h,o-z)
+        integer tree_handle
+c
+c       Free FMM tree structure and deallocate all associated memory.
+c
+c       INPUT:
+c         tree_handle - handle returned by cfmm2dpart_tree_build
+c
+        call fmm2d_tree_dealloc(tree_handle,ier)
+        return
+        end
+c
+c
+c
+c
+c
+        subroutine cfmm2dpart_tree_eval(ier,tree_handle,nd,
+     $     source,ifcharge,charge,ifdipole,dipstr,
+     $     ifpot,pot,ifgrad,grad,ifhess,hess,
+     $     target,ifpottarg,pottarg,ifgradtarg,gradtarg,ifhesstarg,
+     $     hesstarg)
+        use fmm2d_tree_module
+        implicit real *8 (a-h,o-z)
+        integer tree_handle
+c
+c       Evaluate FMM using pre-built tree with arbitrary nd and charges.
+c       Tree must have been built with cfmm2dpart_tree_build.
+c
+c       IMPORTANT: source and target locations must be IDENTICAL to
+c       those used in cfmm2dpart_tree_build. Only charges can change.
+c
+c       INPUT:
+c         tree_handle - handle from cfmm2dpart_tree_build
+c         nd - number of densities
+c         source(2,nsource) - source locations (must match tree_build)
+c         target(2,ntarget) - target locations (must match tree_build)
+c         ifcharge,ifdipole - flags for charge/dipole evaluation
+c         charge(nd,nsource) - charge strengths
+c         dipstr(nd,nsource) - dipole strengths
+c         ifpot,ifgrad,ifhess - flags for output at sources
+c         ifpottarg,ifgradtarg,ifhesstarg - flags for output at targets
+c
+c       OUTPUT:
+c         ier - error code (0=success)
+c         pot(nd,nsource) - potential at sources
+c         grad(nd,nsource) - gradient at sources
+c         hess(nd,nsource) - hessian at sources
+c         pottarg(nd,ntarget) - potential at targets
+c         gradtarg(nd,ntarget) - gradient at targets
+c         hesstarg(nd,ntarget) - hessian at targets
+c
+        real *8 source(2,*)
+        real *8 target(2,*)
+        complex *16 charge(nd,*)
+        complex *16 dipstr(nd,*)
+        complex *16 pot(nd,*)
+        complex *16 grad(nd,*)
+        complex *16 hess(nd,*)
+        complex *16 pottarg(nd,*)
+        complex *16 gradtarg(nd,*)
+        complex *16 hesstarg(nd,*)
+c
+        type(fmm2d_tree_data), pointer :: tree
+        real *8, allocatable :: w(:)
+        complex *16, allocatable :: wrmlexp(:)
+c
+        ier = 0
+c
+c       Get tree from handle
+c
+        call fmm2d_tree_get(tree_handle,tree,ier)
+        if (ier .ne. 0) then
+          call prinf(' invalid tree handle *',tree_handle,1)
+          return
+        endif
+c
+c       Allocate workspace for evaluation (nd-dependent)
+c
+        lused7 = 1
+c
+        isourcesort = lused7 + 5
+        lsourcesort = 2*tree%nsource
+        itargetsort = isourcesort + lsourcesort
+        ltargetsort = 2*tree%ntarget
+        ichargesort = itargetsort + ltargetsort
+        lchargesort = 2*tree%nsource*nd
+        idipvecsort = ichargesort + lchargesort
+        if (ifdipole.eq.1) then
+          ldipvec = 2*tree%nsource
+          ldipstr = 2*tree%nsource*nd
+        else
+          ldipvec = 2
+          ldipstr = 2
+        endif
+        idipstrsort = idipvecsort + ldipvec
+        lused7 = idipstrsort + ldipstr
+c
+        ipot = lused7
+        lpot = 2*tree%nsource*nd
+        lused7 = lused7 + lpot
+c
+        igrad = lused7
+        if (ifgrad .eq. 1) then
+          lgrad = 2*tree%nsource*nd
+        else
+          lgrad = 4
+        endif
+        lused7 = lused7 + lgrad
+c
+        ihess = lused7
+        if (ifhess .eq. 1) then
+          lhess = 2*tree%nsource*nd
+        else
+          lhess = 6
+        endif
+        lused7 = lused7 + lhess
+c
+        ipottarg = lused7
+        lpottarg = 2*tree%ntarget*nd
+        lused7 = lused7 + lpottarg
+c
+        igradtarg = lused7
+        if (ifgradtarg .eq. 1) then
+          lgradtarg = 2*tree%ntarget*nd
+        else
+          lgradtarg = 4
+        endif
+        lused7 = lused7 + lgradtarg
+c
+        ihesstarg = lused7
+        if (ifhesstarg .eq. 1) then
+          lhesstarg = 2*tree%ntarget*nd
+        else
+          lhesstarg = 6
+        endif
+        lused7 = lused7 + lhesstarg
+c
+c       Compute nmax for mptemp allocation
+c
+        nmax = 0
+        do i = 0,tree%nlev
+          if (tree%nterms(i).gt. nmax .and. i.ge. 2) then
+            nmax = tree%nterms(i)
+          endif
+        enddo
+c
+        iiaddr = lused7
+        imptemp = iiaddr + 2*tree%nboxes
+        lmptemp = (2*nmax+1)*2*nd
+        lused7 = imptemp + lmptemp
+c
+        allocate(w(lused7),stat=ier)
+        if (ier.ne.0) then
+          ier = 8
+          return
+        endif
+c
+c       Reorder sources and charges using tree's sorting indices
+c
+        call c2dreorder_nd(nd,tree%nsource,source,ifcharge,charge,
+     $     tree%wlists(tree%iisource),ifdipole,dipstr,
+     1     w(isourcesort),w(ichargesort),w(idipstrsort))
+c
+        if (tree%ntarget .gt. 0) then
+          call l2dreordertarg(tree%ntarget,target,
+     $       tree%wlists(tree%iitarget),w(itargetsort))
+        endif
+c
+c       Allocate multipole/local expansion workspace (nd-dependent)
+c
+        call l2dmpalloc(nd,tree%wlists(tree%iwlists),w(iiaddr),
+     $     tree%nboxes,lmptot,tree%nterms)
+c
+        irmlexp = 1
+        lused7_rml = irmlexp + lmptot
+        allocate(wrmlexp(lused7_rml),stat=ier)
+        if (ier.ne.0) then
+          ier = 16
+          deallocate(w)
+          return
+        endif
+c
+c       Call main FMM evaluation routine
+c
+        ifevalfar = 1
+        ifevalloc = 1
+c
+        call cfmm2dparttargmain(ier,tree%iprec,nd,
+     $     ifevalfar,ifevalloc,
+     $     tree%nsource,w(isourcesort),tree%wlists(tree%iisource),
+     $     ifcharge,w(ichargesort),
+     $     ifdipole,w(idipstrsort),
+     $     ifpot,w(ipot),ifgrad,w(igrad),ifhess,w(ihess),
+     $     tree%ntarget,w(itargetsort),tree%wlists(tree%iitarget),
+     $     ifpottarg,w(ipottarg),ifgradtarg,w(igradtarg),
+     $     ifhesstarg,w(ihesstarg),
+     $     tree%epsfmm,w(iiaddr),wrmlexp(irmlexp),w(imptemp),lmptemp,
+     $     tree%nboxes,tree%laddr,tree%nlev,tree%scale,tree%bsize,
+     $     tree%nterms,tree%wlists(tree%iwlists),tree%lwlists)
+c
+c       Unsort results back to original ordering
+c
+        if (ifpot .eq. 1)
+     $     call l2dpsort(nd,tree%nsource,tree%wlists(tree%iisource),
+     $     w(ipot),pot)
+        if (ifgrad .eq. 1)
+     $     call l2dpsort(nd,tree%nsource,tree%wlists(tree%iisource),
+     $     w(igrad),grad)
+        if (ifhess .eq. 1)
+     $     call l2dpsort(nd,tree%nsource,tree%wlists(tree%iisource),
+     $     w(ihess),hess)
+c
+        if (ifpottarg .eq. 1)
+     $     call l2dpsort(nd,tree%ntarget,tree%wlists(tree%iitarget),
+     $     w(ipottarg),pottarg)
+        if (ifgradtarg .eq. 1)
+     $     call l2dpsort(nd,tree%ntarget,tree%wlists(tree%iitarget),
+     $     w(igradtarg),gradtarg)
+        if (ifhesstarg .eq. 1)
+     $     call l2dpsort(nd,tree%ntarget,tree%wlists(tree%iitarget),
+     $     w(ihesstarg),hesstarg)
+c
+c       Deallocate temporary arrays
+c
+        deallocate(wrmlexp)
+        deallocate(w)
+c
+        if (ier .ne. 0) ier = 0
+c
         return
         end
 c

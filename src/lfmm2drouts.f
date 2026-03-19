@@ -1,12 +1,8 @@
-cc Copyright (C) 2009-2012: Leslie Greengard and Zydrunas Gimbutas
-cc Contact: greengard@cims.nyu.edu
-cc 
-cc This software is being released under a modified FreeBSD license
-cc (see COPYING in home directory). 
+cc SPDX-License-Identifier: BSD-3-Clause
+cc Copyright (C) 2010-2011: Leslie Greengard and Zydrunas Gimbutas
+cc See LICENSE file for full license text
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c    $Date$
-c    $Revision$
 c
 c       
 c
@@ -14,7 +10,7 @@ c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c        this is the end of the debugging code and the beginning 
-c        of the routines for Helmholtz FMM in R^2
+c        of the routines for Laplace FMM in R^2
 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
@@ -85,6 +81,7 @@ c     $     target,ntarget,w(iitarget),w(iwlists),lw-lused7,lused)
         ifempty=0
         minlevel=0
         maxlevel=30
+        max134=1
         call d2tstrcrem(ier,source,nsource,nbox,
      $     nboxes,w(iisource),laddr,nlev,center,size,
      $     target,ntarget,w(iitarget),w(iwlists),lw-lused7,lused,
@@ -155,14 +152,15 @@ c
 c
 c
 c
-        subroutine lfmm2d_list2
-     $     (bsize,nlev,laddr,scale,nterms,rmlexp,iaddr,epsfmm,
+        subroutine lfmm2d_list2(nd,
+     $     bsize,nlev,laddr,scale,nterms,rmlexp,iaddr,epsfmm,
      $     timeinfo,wlists,mptemp,lmptemp,
      $     ifprune_list2)
         implicit real *8 (a-h,o-z)
 c
         integer iaddr(2,*),laddr(2,*),nterms(0:*)
-        real *8 rmlexp(*),scale(0:*)
+        complex *16 rmlexp(*)
+        real *8 scale(0:*)
         integer itable(-3:3,-3:3)
 c
         integer list(10 000)
@@ -237,7 +235,7 @@ c
 c
 c       ... merge multipole expansions of the kids 
 c
-            call l2dzero(rmlexp(iaddr(1,ibox)),nterms(level0))
+            call l2dzero(nd,rmlexp(iaddr(1,ibox)),nterms(level0))
             if (ifprint .ge. 2) then
                call prin2('center0=*',center0,2)
             endif
@@ -252,15 +250,15 @@ c
                endif
                level1=box1(1)
                if( nterms(level0)+nterms(level1) .gt. 95 ) then
-               call l2dmpmp(scale(level1),center1,
+               call l2dmpmp(nd,scale(level1),center1,
      1            rmlexp(iaddr(1,jbox)),nterms(level1),scale(level0),
      1            center0,mptemp,nterms(level0))
                else
-               call l2dmpmp_carray(scale(level1),center1,
+               call l2dmpmp_carray(nd,scale(level1),center1,
      1            rmlexp(iaddr(1,jbox)),nterms(level1),scale(level0),
      1            center0,mptemp,nterms(level0),carray,ldc)
                endif
-               call l2dadd(mptemp,rmlexp(iaddr(1,ibox)),
+               call l2dadd(nd,mptemp,rmlexp(iaddr(1,ibox)),
      1            nterms(level0))
  2100       continue
             if (ifprint .ge. 2) then
@@ -378,20 +376,22 @@ c
               if (ifdirect2 .eq. 0) then
               if( if_use_trunc .eq. 0) then
 
-                 call l2dzero(mptemp,nterms(level1))
+              ii=box1(2)-box(2)
+              jj=box1(3)-box(3)
+                 call l2dzero(nd,mptemp,nterms(level1))
                  if( nterms(level0)+nterms(level1) .gt. 95 ) then
-                 call l2dmploc(scale(level1),center1,
+                 call l2dmploc(nd,scale(level1),center1,
      1              rmlexp(iaddr(1,jbox)),nterms(level1),
      $              scale(level0),
      1              center0,mptemp,nterms(level0))
                  else
-                 call l2dmploc_carray(scale(level1),center1,
+                 call l2dmploc_carray(nd,scale(level1),center1,
      1              rmlexp(iaddr(1,jbox)),nterms(level1),
      $              scale(level0),
      1              center0,mptemp,nterms(level0),
      $              carray,ldc)
                  endif
-                 call l2dadd(mptemp,rmlexp(iaddr(2,ibox)),
+                 call l2dadd(nd,mptemp,rmlexp(iaddr(2,ibox)),
      1              nterms(level0))
 c
 c              call l2dmploc_add(scale(level1),center1,
@@ -407,20 +407,20 @@ c     $           nterms(level0))
               nterms_trunc=min(nterms(level0),nterms_trunc)
               nterms_trunc=min(nterms(level1),nterms_trunc)
 
-                 call l2dzero(mptemp,nterms_trunc)
+                 call l2dzero(nd,mptemp,nterms_trunc)
                  if( nterms_trunc+nterms_trunc .gt. 95 ) then
-                 call l2dmploc(scale(level1),center1,
+                 call l2dmploc(nd,scale(level1),center1,
      1              rmlexp(iaddr(1,jbox)),nterms_trunc,
      $              scale(level0),
      1              center0,mptemp,nterms_trunc)
                  else
-                 call l2dmploc_carray(scale(level1),center1,
+                 call l2dmploc_carray(nd,scale(level1),center1,
      1              rmlexp(iaddr(1,jbox)),nterms_trunc,
      $              scale(level0),
      1              center0,mptemp,nterms_trunc,
      $              carray,ldc)
                  endif
-                 call l2dadd(mptemp,rmlexp(iaddr(2,ibox)),
+                 call l2dadd(nd,mptemp,rmlexp(iaddr(2,ibox)),
      1              nterms_trunc)
 
 c              call l2dmploc_add_trunc(scale(level1),center1,
@@ -499,16 +499,16 @@ c
                   endif
                   level1=box1(1)
                   if( nterms(level0)+nterms(level1) .gt. 95 ) then
-                  call l2dlocloc(scale(level0),center0,
+                  call l2dlocloc(nd,scale(level0),center0,
      1               rmlexp(iaddr(2,ibox)),nterms(level0),
      1               scale(level1),center1,mptemp,nterms(level1))
                   else
-                  call l2dlocloc_carray(scale(level0),center0,
+                  call l2dlocloc_carray(nd,scale(level0),center0,
      1               rmlexp(iaddr(2,ibox)),nterms(level0),
      1               scale(level1),center1,mptemp,nterms(level1),
      1               carray,ldc)
                   endif
-                  call l2dadd(mptemp,rmlexp(iaddr(2,jbox)),
+                  call l2dadd(nd,mptemp,rmlexp(iaddr(2,jbox)),
      1   	       nterms(level1))
  5100          continue
                if (ifprint .ge. 2) call prinf('=============*',x,0)
@@ -552,16 +552,18 @@ c
 c
 c
 c
-        subroutine l2dpsort(n,isource,psort,pot)
+        subroutine l2dpsort(nd,n,isource,psort,pot)
         implicit real *8 (a-h,o-z)
         integer isource(*)
-        complex *16 pot(*),psort(*)
+        complex *16 pot(nd,*),psort(nd,*)
 c
 ccc        call prinf('isource=*',isource,n)
 c
-C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i)
+C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i,idim)
         do i=1,n
-        pot(isource(i))=psort(i)
+        do idim=1,nd
+        pot(idim,isource(i))=psort(idim,i)
+        enddo
         enddo
 C$OMP END PARALLEL DO
 c
@@ -665,15 +667,17 @@ c
 c
 c
 c
-        subroutine l2dzero(mpole,nterms)
+        subroutine l2dzero(nd,mpole,nterms)
         implicit real *8 (a-h,o-z)
 c
 c       ... set multipole to zero
 c
-        complex *16 mpole(0:nterms)
-c       
+        complex *16 mpole(nd,0:nterms)
+c
+        do idim=1,nd
         do n=0,nterms
-        mpole(n)=0
+        mpole(idim,n)=0
+        enddo
         enddo
 c
         return
@@ -683,13 +687,15 @@ c
 c
 c
 c
-        subroutine l2dadd(mpole,mpole2,nterms)
+        subroutine l2dadd(nd,mpole,mpole2,nterms)
         implicit real *8 (a-h,o-z)
-        complex *16 mpole(0:nterms)
-        complex *16 mpole2(0:nterms)
-c       
+        complex *16 mpole(nd,0:nterms)
+        complex *16 mpole2(nd,0:nterms)
+c
+        do idim=1,nd
         do n=0,nterms
-        mpole2(n)=mpole2(n)+mpole(n)
+        mpole2(idim,n)=mpole2(idim,n)+mpole(idim,n)
+        enddo
         enddo
 c
         return
@@ -699,9 +705,9 @@ c
 c
 c
 c
-        subroutine l2dmpalloc(wlists,iaddr,nboxes,lmptot,nterms)
+        subroutine l2dmpalloc(nd,wlists,iaddr,nboxes,lmptot,nterms)
         implicit real *8 (a-h,o-z)
-        integer box(20)
+        integer box(15)
         integer nterms(0:*)
         integer iaddr(2,nboxes)
         real *8 center0(2),corners0(2,4)
@@ -716,15 +722,15 @@ c
         level=box(1)
 c
 c       ... first, allocate memory for the multipole expansion
-c       
+c
         iaddr(1,ibox)=iptr
-        iptr=iptr+(nterms(level)+1)*2
+        iptr=iptr+(nterms(level)+1)*nd
 c
 c       ... then, allocate memory for the local expansion
-c       
+c
         iaddr(2,ibox)=iptr
-        iptr=iptr+(nterms(level)+1)*2
-c       
+        iptr=iptr+(nterms(level)+1)*nd
+c
         enddo
         lmptot = iptr
         return

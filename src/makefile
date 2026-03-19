@@ -22,8 +22,8 @@ ifeq ($(HOST),macosx)
 
 OBJSUF=o
 MODSUF=mod
-FC=gfortran -c 
-FFLAGS=-O2 -std=legacy
+FC=gfortran -c
+FFLAGS=-O2 -std=legacy -finteger-4-integer-8
 FLINK=gfortran -o $(PROJECT)
 
 else
@@ -32,8 +32,8 @@ ifeq ($(HOST),linux-gfortran)
 
 OBJSUF=o
 MODSUF=mod
-FC=gfortran -c 
-FFLAGS=-O2 -std=legacy
+FC=gfortran -c
+FFLAGS=-O2 -std=legacy -finteger-4-integer-8
 FLINK=gfortran -o $(PROJECT)
 
 else
@@ -44,7 +44,7 @@ ifeq ($(HOST),linux-gfortran-openmp)
 OBJSUF=o
 MODSUF=mod
 FC=gfortran -c 
-FFLAGS=-O3 --openmp -std=legacy
+FFLAGS=-O3 --openmp -std=legacy -finteger-4-integer-8
 FLINK=gfortran -o $(PROJECT) --openmp
 ### export OMP_NUM_THREADS=4
 ### export OMP_STACKSIZE=1024M
@@ -163,19 +163,26 @@ endif
 #
 vpath %.f .
 
-FMODS = 
+FMODS = fmm_tree_manager.f
 
 FSRCS = hfmm2dpart.f \
-     hfmm2drouts.f d2tstrcr_omp.f d2mtreeplot.f  \
-     h2dterms.f helmrouts2d.f cdjseval2d.f hank103.f 
+     hfmm2drouts.f hfmm2drouts_exp.f hfmm2drouts_far.f \
+     hfmm2drouts_far_exp.f \
+     d2tstrcr_omp.f d2mtreeplot.f \
+     h2dterms.f helmrouts2d.f helmrouts2d_exp.f helmrouts2d_far.f \
+     cdjseval2d.f hank103.f
 
-FSRCS += prini.f 
+FSRCS += prini.f
 
-FSRCS += cfmm2dpart.f zfmm2dpart.f rfmm2dpart.f lfmm2dpart.f lfmm2drouts.f \
-     l2dterms.f laprouts2d.f
+FSRCS += cfmm2dpart.f zfmm2dpart.f rfmm2dpart.f lfmm2dpart.f \
+     lfmm2drouts.f lfmm2drouts_exp.f \
+     l2dterms.f laprouts2d.f laprouts2d_exp.f
 
+FSRCS += dfft.f next235.f hwts2e.f lwtsexp2.f
 
-ifeq ($(WITH_SECOND),1) 
+FSRCS += fmm2d_legacy.f
+
+ifeq ($(WITH_SECOND),1)
 FSRCS += second-r8.f
 endif
 
@@ -192,8 +199,8 @@ lib$(PROJECT_LIB).a:   $(MODS)   $(OBJS)
 clean: 
 	rm -f $(OBJS)
 # 
-distclean: 
-	rm -f $(OBJS) int2 *.a fort.*
+distclean:
+	rm -f $(OBJS) int2 *.a *.mod fort.*
 # 
 list: $(FSRCS)
 	echo $^

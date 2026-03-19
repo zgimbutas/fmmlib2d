@@ -1,8 +1,8 @@
-cc Copyright (C) 2009-2012: Leslie Greengard and Zydrunas Gimbutas
-cc Contact: greengard@cims.nyu.edu
-cc 
-cc This software is being released under a modified FreeBSD license
-cc (see COPYING in home directory). 
+cc SPDX-License-Identifier: BSD-3-Clause
+cc Copyright (C) 2010: Leslie Greengard, Zydrunas Gimbutas, Vladimir Rokhlin
+cc See LICENSE file for full license text
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c        this is the end of the debugging code and the beginning 

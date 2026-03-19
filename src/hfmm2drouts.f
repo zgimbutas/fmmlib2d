@@ -1,19 +1,13 @@
-cc Copyright (C) 2009-2012: Leslie Greengard and Zydrunas Gimbutas
-cc Contact: greengard@cims.nyu.edu
-cc 
-cc This software is being released under a modified FreeBSD license
-cc (see COPYING in home directory). 
+cc Copyright (C) 2010-2011: Leslie Greengard and Zydrunas Gimbutas
+cc SPDX-License-Identifier: GPL-2.0-or-later
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c    $Date: 2010-06-08 22:18:57 -0400 (Tue, 08 Jun 2010) $
-c    $Revision: 1009 $
 c
-c       
 c
 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c        this is the end of the debugging code and the beginning 
+c        this is the end of the debugging code and the beginning
 c        of the routines for Helmholtz FMM in R^2
 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -26,7 +20,7 @@ c
      $     nboxes,laddr,nlev,center,size,
      $     w,lw,lused7)
         implicit real *8 (a-h,o-z)
-c       
+c
 c       Helmholtz FMM in R^2: build the quad-tree
 c
 c     INPUT PARAMETERS:
@@ -44,27 +38,27 @@ c       lused7 = the amount of workspace used
 c
 c
         real *8 source(2,*),target(2,*)
-c       
+c
         real *8 center(2)
-c       
+c
         integer laddr(2,200)
         integer box(15)
         real *8 center0(2),corners0(2,4)
-c       
+c
         integer box1(15)
         real *8 center1(2),corners1(2,4)
 c
         complex *16 zk
         real *8 w(*)
-c       
+c
         ier=0
-c       
+c
         done=1
         pi=4*atan(done)
-c       
+c
         lused7=0
         ifprint=0
-c       
+c
         iisource=1
         lused7=lused7+nsource
         if (ifprint.eq.1) call prinf('lused7=*',lused7,1)
@@ -98,16 +92,16 @@ c
         lused7=lused7+lwlists
         if (lused7 .ge. lw) ier=128
         if( ier .ne. 0 ) return
-c       
-        if (ifprint.eq.1) 
+c
+        if (ifprint.eq.1)
      $       call prin2('after d2tstrcr, center=*',center,2)
-        if (ifprint.eq.1) 
+        if (ifprint.eq.1)
      $       call prin2('after d2tstrcr, size=*',size,1)
-        if (ifprint.eq.1) 
+        if (ifprint.eq.1)
      $       call prinf('after d2tstrcr, nlev=*',nlev,1)
-        if (ifprint.eq.1) 
+        if (ifprint.eq.1)
      $       call prinf('after d2tstrcr, nbox=*',nbox,1)
-        if (ifprint.eq.1) 
+        if (ifprint.eq.1)
      $       call prinf('after d2tstrcr, laddr=*',laddr,2*(nlev+1))
 c
 ccc        call prinf('after d2tstrcr, isource=*',w(iisource),nsource)
@@ -124,17 +118,17 @@ c       ... plot the boxes
 c
         iw=51
         call plot_box2d(iw,center,size)
-c       
+c
         itag=1
         iw=52
         call plot_label2d(iw,center,size,itag,itag)
 c
         iw=60
         call plot_points2d(iw,source,nsource)
-c       
+c
         iw=63
         call plot_points2d(iw,target,ntarget)
-c       
+c
         do ibox=1,nboxes
            call d2tgetb(ier,ibox,box,center0,corners0,w(iwlists))
            level=box(1)
@@ -142,12 +136,12 @@ c
 c
            iw=61
            call plot_box2d(iw,center0,size0)
-c       
+c
            itag=ibox
            iw=62
            call plot_label2d(iw,center0,size0,itag,itag)
-        enddo  
-c      
+        enddo
+c
         endif
 c
         return
@@ -157,14 +151,15 @@ c
 c
 c
 c
-        subroutine hfmm2d_list2
-     $     (zk,bsize,nlev,laddr,scale,nterms,rmlexp,iaddr,epsfmm,
+        subroutine hfmm2d_list2(nd,
+     $     zk,bsize,nlev,laddr,scale,nterms,rmlexp,iaddr,epsfmm,
      $     timeinfo,wlists,mptemp,lmptemp,
      $     ifprune_list2)
         implicit real *8 (a-h,o-z)
 c
         integer iaddr(2,*),laddr(2,*),nterms(0:*)
-        real *8 rmlexp(*),scale(0:*)
+        complex *16 rmlexp(*)
+        real *8 scale(0:*)
         integer itable(-3:3,-3:3)
 c
         integer list(10 000)
@@ -172,41 +167,41 @@ c
         integer box(15)
         real *8 bsize(0:200)
         real *8 center0(2),corners0(2,4)
-c       
+c
         integer box1(15)
         real *8 center1(2),corners1(2,4)
 c
         real *8 wlists(*)
         complex *16 mptemp(lmptemp)
         complex *16 zk
-c
         complex *16 ptemp,ftemp(2),htemp(3)
 c
         real *8 timeinfo(10)
 c
-c               
-c     ifprint is an internal information printing flag. 
+c
+c
+c     ifprint is an internal information printing flag.
 c     Suppressed if ifprint=0.
 c     Prints timing breakdown and other things if ifprint=1.
 c     Prints timing breakdown, list information, and other things if ifprint=2.
-c       
+c
         ifprint=1
 c
-         if (ifprint .ge. 1) 
+         if (ifprint .ge. 1)
      $     call prinf('=== STEP 3 (merge mp) ===*',i,0)
          t1=second()
 C$        t1=omp_get_wtime()
 c
 c       ... step 3, merge all multipole expansions
-c       
+c
 ccc         do 2200 ibox=nboxes,1,-1
          do 2300 ilev=nlev,3,-1
 C$OMP PARALLEL DO DEFAULT(SHARED)
 C$OMP$PRIVATE(ibox,box,center0,corners0,level0,level,npts,nkids,radius)
 C$OMP$PRIVATE(jbox,box1,center1,corners1,level1)
-C$OMP$PRIVATE(mptemp,lused,ier,i,j,ptemp,ftemp,cd) 
+C$OMP$PRIVATE(mptemp,lused,ier,i,j,ptemp,ftemp,cd)
 cccC$OMP$SCHEDULE(DYNAMIC)
-cccC$OMP$NUM_THREADS(4) 
+cccC$OMP$NUM_THREADS(4)
          do 2200 ibox=laddr(1,ilev),laddr(1,ilev)+laddr(2,ilev)-1
 c
          call d2tgetb(ier,ibox,box,center0,corners0,wlists)
@@ -224,7 +219,7 @@ ccc         if (level0 .ge. 0) then
             radius = (corners0(1,1) - center0(1))**2
             radius = radius + (corners0(2,1) - center0(2))**2
             radius = sqrt(radius)
-c       
+c
             if( ifprint .ge. 2 ) then
                call prin2('radius=*',radius,1)
                call prinf('ibox=*',ibox,1)
@@ -232,9 +227,9 @@ c
                call prinf('nkids=*',nkids,1)
             endif
 c
-c       ... merge multipole expansions of the kids 
+c       ... merge multipole expansions of the kids
 c
-            call h2dzero(rmlexp(iaddr(1,ibox)),nterms(level0))
+            call h2dzero(nd,rmlexp(iaddr(1,ibox)),nterms(level0))
             if (ifprint .ge. 2) then
                call prin2('center0=*',center0,2)
             endif
@@ -248,10 +243,10 @@ c
                call prin2('center1=*',center1,2)
                endif
                level1=box1(1)
-               call h2dmpmp(zk,scale(level1),center1,
+               call h2dmpmp(nd,zk,scale(level1),center1,
      1            rmlexp(iaddr(1,jbox)),nterms(level1),scale(level0),
      1            center0,mptemp,nterms(level0))
-               call h2dadd(mptemp,rmlexp(iaddr(1,ibox)),
+               call h2dadd(nd,mptemp,rmlexp(iaddr(1,ibox)),
      1            nterms(level0))
  2100       continue
             if (ifprint .ge. 2) then
@@ -293,7 +288,7 @@ C$        t2=omp_get_wtime()
 ccc        call prin2('time=*',t2-t1,1)
          timeinfo(3)=t2-t1
 c
-        if (ifprint .ge. 1) 
+        if (ifprint .ge. 1)
      $     call prinf('=== STEP 4 (mp to lo) ===*',i,0)
         t1=second()
 C$        t1=omp_get_wtime()
@@ -313,9 +308,9 @@ C$OMP PARALLEL DO DEFAULT(SHARED)
 C$OMP$PRIVATE(ibox,box,center0,corners0,level0,list,nlists,nlist,itype)
 C$OMP$PRIVATE(jbox,box1,center1,corners1,level1,ifdirect2,radius)
 C$OMP$PRIVATE(mptemp,lused,ier,i,j,ptemp,ftemp,htemp,cd,ilist)
-C$OMP$PRIVATE(if_use_trunc,nterms_trunc,ii,jj) 
+C$OMP$PRIVATE(if_use_trunc,nterms_trunc,ii,jj)
 C$OMP$SCHEDULE(DYNAMIC)
-cccC$OMP$NUM_THREADS(1) 
+cccC$OMP$NUM_THREADS(1)
         do 4200 ibox=laddr(1,ilev),laddr(1,ilev)+laddr(2,ilev)-1
         call d2tgetb(ier,ibox,box,center0,corners0,wlists)
         if (ifprint .ge. 2) then
@@ -337,7 +332,7 @@ c       ... prune all sourceless boxes
 c
 ccc           if( box(10) .eq. 0 ) nlist=0
 
-c       ... for all pairs in list #2, apply the translation operator 
+c       ... for all pairs in list #2, apply the translation operator
 c
            do 4150 ilist=1,nlist
               jbox=list(ilist)
@@ -356,9 +351,9 @@ c
 
               level1=box1(1)
 c              ifdirect2 = 0
-c              if( box1(10) .lt. (nterms(level1)+1)/2 .and. 
-c     $            box(10) .lt. (nterms(level1)+1)/2  ) 
-c     $               ifdirect2 = 1        
+c              if( box1(10) .lt. (nterms(level1)+1)/2 .and.
+c     $            box(10) .lt. (nterms(level1)+1)/2  )
+c     $               ifdirect2 = 1
 c
               ifdirect2 = 0
 c
@@ -366,31 +361,13 @@ c
 c
               if (ifdirect2 .eq. 0) then
               if( if_use_trunc .eq. 0) then
-                 call h2dzero(mptemp,nterms(level1))
-                 call h2dmploc(zk,scale(level1),center1,
+                 call h2dzero(nd,mptemp,nterms(level1))
+                 call h2dmploc(nd,zk,scale(level1),center1,
      1              rmlexp(iaddr(1,jbox)),nterms(level1),
      $              scale(level0),
      1              center0,mptemp,nterms(level0))
-                 call h2dadd(mptemp,rmlexp(iaddr(2,ibox)),
+                 call h2dadd(nd,mptemp,rmlexp(iaddr(2,ibox)),
      1              nterms(level0))
-c
-c                 call h2dmploc_add(zk,scale(level1),center1,
-c     1              rmlexp(iaddr(1,jbox)),nterms(level1),
-c     $              scale(level0),
-c     1              center0,rmlexp(iaddr(2,ibox)),nterms(level0))
-c
-c              call h2dmploc_add_trunc(zk,scale(level1),center1,
-c     $           rmlexp(iaddr(1,jbox)),nterms(level1),nterms(level1),
-c     $           scale(level0), center0,rmlexp(iaddr(2,ibox)),
-c     $           nterms(level0),nterms(level0))
-c
-c               call prinf('ier=*',ier,1)
-c               call prin2('in mploc, mptemp=*',
-c     $            mptemp,2*(2*nterms(level0)+1))
-c               call prin2('in mploc, rmlexp=*',
-c     $            rmlexp(iaddr(1,ibox)),2*(2*nterms(level0)+1))
-c               call prin2('in mploc, rmlexp=*',
-c     $            rmlexp(iaddr(2,jbox)),2*(2*nterms(level1)+1))
 c
               else
 
@@ -400,10 +377,13 @@ c
               nterms_trunc=min(nterms(level0),nterms_trunc)
               nterms_trunc=min(nterms(level1),nterms_trunc)
 
-              call h2dmploc_add_trunc(zk,scale(level1),center1,
-     $           rmlexp(iaddr(1,jbox)),nterms(level1),nterms_trunc,
-     $           scale(level0),center0,rmlexp(iaddr(2,ibox)),
-     $           nterms(level0),nterms_trunc)
+                 call h2dzero(nd,mptemp,nterms_trunc)
+                 call h2dmploc(nd,zk,scale(level1),center1,
+     1              rmlexp(iaddr(1,jbox)),nterms_trunc,
+     $              scale(level0),
+     1              center0,mptemp,nterms_trunc)
+                 call h2dadd(nd,mptemp,rmlexp(iaddr(2,ibox)),
+     1              nterms_trunc)
 
               endif
               endif
@@ -424,8 +404,8 @@ c
 C$        t2=omp_get_wtime()
 ccc     call prin2('time=*',t2-t1,1)
         timeinfo(4)=t2-t1
-c       
-        if (ifprint .ge. 1) 
+c
+        if (ifprint .ge. 1)
      $     call prinf('=== STEP 5 (split lo) ===*',i,0)
         t1=second()
 C$        t1=omp_get_wtime()
@@ -437,14 +417,14 @@ ccc        do 5200 ibox=1,nboxes
 C$OMP PARALLEL DO DEFAULT(SHARED)
 C$OMP$PRIVATE(ibox,box,center0,corners0,level0,level,npts,nkids,radius)
 C$OMP$PRIVATE(jbox,box1,center1,corners1,level1)
-C$OMP$PRIVATE(mptemp,lused,ier,i,j,ptemp,ftemp,cd) 
+C$OMP$PRIVATE(mptemp,lused,ier,i,j,ptemp,ftemp,cd)
 cccC$OMP$SCHEDULE(DYNAMIC)
-cccC$OMP$NUM_THREADS(4) 
+cccC$OMP$NUM_THREADS(4)
         do 5200 ibox=laddr(1,ilev),laddr(1,ilev)+laddr(2,ilev)-1
 c
         call d2tgetb(ier,ibox,box,center0,corners0,wlists)
         call d2tnkids(box,nkids)
-c       
+c
         if (nkids .ne. 0) then
             level0=box(1)
             if (level0 .ge. 2) then
@@ -470,10 +450,10 @@ c
                      call prin2('center1=*',center1,2)
                   endif
                   level1=box1(1)
-                  call h2dlocloc(zk,scale(level0),center0,
+                  call h2dlocloc(nd,zk,scale(level0),center0,
      1               rmlexp(iaddr(2,ibox)),nterms(level0),
      1               scale(level1),center1,mptemp,nterms(level1))
-                  call h2dadd(mptemp,rmlexp(iaddr(2,jbox)),
+                  call h2dadd(nd,mptemp,rmlexp(iaddr(2,jbox)),
      1   	       nterms(level1))
  5100          continue
                if (ifprint .ge. 2) call prinf('=============*',x,0)
@@ -493,7 +473,7 @@ c
  5200   continue
 C$OMP END PARALLEL DO
  5300   continue
-c       
+c
         t2=second()
 C$        t2=omp_get_wtime()
 ccc     call prin2('time=*',t2-t1,1)
@@ -508,7 +488,7 @@ c
 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c        this is the end of the debugging code and the beginning 
+c        this is the end of the debugging code and the beginning
 c        of the auxiliary routines
 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -517,16 +497,20 @@ c
 c
 c
 c
-        subroutine h2dpsort(n,isource,psort,pot)
+        subroutine h2dpsort(nd,n,isource,psort,pot)
         implicit real *8 (a-h,o-z)
         integer isource(*)
-        complex *16 pot(*),psort(*)
+        complex *16 pot(nd,*),psort(nd,*)
 c
 ccc        call prinf('isource=*',isource,n)
-c        
+c
+C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i,idim)
         do i=1,n
-        pot(isource(i))=psort(i)
+        do idim=1,nd
+        pot(idim,isource(i))=psort(idim,i)
         enddo
+        enddo
+C$OMP END PARALLEL DO
 c
         return
         end
@@ -535,17 +519,21 @@ c
 c
 c
 c
-        subroutine h2dfsort(n,isource,fldsort,fld)
+        subroutine h2dgsort(nd,n,isource,gradsort,grad)
         implicit real *8 (a-h,o-z)
         integer isource(*)
-        complex *16 fld(2,*),fldsort(2,*)
-c        
+        complex *16 grad(nd,2,*),gradsort(nd,2,*)
+c
 ccc        call prinf('isource=*',isource,n)
 c
+C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i,idim)
         do i=1,n
-        fld(1,isource(i))=fldsort(1,i)
-        fld(2,isource(i))=fldsort(2,i)
+        do idim=1,nd
+        grad(idim,1,isource(i))=gradsort(idim,1,i)
+        grad(idim,2,isource(i))=gradsort(idim,2,i)
         enddo
+        enddo
+C$OMP END PARALLEL DO
 c
         return
         end
@@ -554,18 +542,22 @@ c
 c
 c
 c
-        subroutine h2dhsort(n,isource,hesssort,hess)
+        subroutine h2dhsort(nd,n,isource,hesssort,hess)
         implicit real *8 (a-h,o-z)
         integer isource(*)
-        complex *16 hess(3,*),hesssort(3,*)
-c        
+        complex *16 hess(nd,3,*),hesssort(nd,3,*)
+c
 ccc        call prinf('isource=*',isource,n)
 c
+C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i,idim)
         do i=1,n
-        hess(1,isource(i))=hesssort(1,i)
-        hess(2,isource(i))=hesssort(2,i)
-        hess(3,isource(i))=hesssort(3,i)
+        do idim=1,nd
+        hess(idim,1,isource(i))=hesssort(idim,1,i)
+        hess(idim,2,isource(i))=hesssort(idim,2,i)
+        hess(idim,3,isource(i))=hesssort(idim,3,i)
         enddo
+        enddo
+C$OMP END PARALLEL DO
 c
         return
         end
@@ -574,28 +566,35 @@ c
 c
 c
 c
-        subroutine h2dreorder(nsource,source,
+        subroutine h2dreorder(nd,nsource,source,
      $     ifcharge,charge,isource,ifdipole,
-     1     dipstr,dipvec,sourcesort,chargesort,dipvecsort,dipstrsort) 
+     1     dipstr,dipvec,sourcesort,chargesort,dipvecsort,dipstrsort)
         implicit real *8 (a-h,o-z)
         real *8 source(2,*),sourcesort(2,*)
         integer isource(*)
         real *8 dipvec(2,*),dipvecsort(2,*)
-        complex *16 charge(*),chargesort(*),dipstr(*),dipstrsort(*)
-c       
+        complex *16 charge(nd,*),chargesort(nd,*)
+        complex *16 dipstr(nd,*),dipstrsort(nd,*)
+c
 ccc        call prinf('nsource=*',nsource,1)
+C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i,idim)
         do i = 1,nsource
         sourcesort(1,i) = source(1,isource(i))
         sourcesort(2,i) = source(2,isource(i))
         if( ifcharge .ge. 1 ) then
-        chargesort(i) = charge(isource(i))
+          do idim = 1,nd
+            chargesort(idim,i) = charge(idim,isource(i))
+          enddo
         endif
         if (ifdipole .ge. 1) then
-        dipstrsort(i) = dipstr(isource(i))
-        dipvecsort(1,i) = dipvec(1,isource(i))
-        dipvecsort(2,i) = dipvec(2,isource(i))
+          do idim = 1,nd
+            dipstrsort(idim,i) = dipstr(idim,isource(i))
+          enddo
+          dipvecsort(1,i) = dipvec(1,isource(i))
+          dipvecsort(2,i) = dipvec(2,isource(i))
         endif
         enddo
+C$OMP END PARALLEL DO
         return
         end
 c
@@ -606,13 +605,15 @@ c
         subroutine h2dreordertarg(ntarget,target,itarget,targetsort)
         implicit real *8 (a-h,o-z)
         real *8 target(2,*),targetsort(2,*)
-        integer itarget(1)
-c       
+        integer itarget(*)
+c
 ccc        call prinf('ntarget=*',ntarget,1)
+C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i)
         do i = 1,ntarget
         targetsort(1,i) = target(1,itarget(i))
         targetsort(2,i) = target(2,itarget(i))
         enddo
+C$OMP END PARALLEL DO
         return
         end
 c
@@ -620,15 +621,17 @@ c
 c
 c
 c
-        subroutine h2dzero(mpole,nterms)
+        subroutine h2dzero(nd,mpole,nterms)
         implicit real *8 (a-h,o-z)
 c
 c       ... set multipole to zero
 c
-        complex *16 mpole(-nterms:nterms)
-c       
+        complex *16 mpole(nd,-nterms:nterms)
+c
+        do idim=1,nd
         do n=-nterms,nterms
-        mpole(n)=0
+        mpole(idim,n)=0
+        enddo
         enddo
 c
         return
@@ -638,13 +641,15 @@ c
 c
 c
 c
-        subroutine h2dadd(mpole,mpole2,nterms)
+        subroutine h2dadd(nd,mpole,mpole2,nterms)
         implicit real *8 (a-h,o-z)
-        complex *16 mpole(-nterms:nterms)
-        complex *16 mpole2(-nterms:nterms)
-c       
+        complex *16 mpole(nd,-nterms:nterms)
+        complex *16 mpole2(nd,-nterms:nterms)
+c
+        do idim=1,nd
         do n=-nterms,nterms
-        mpole2(n)=mpole2(n)+mpole(n)
+        mpole2(idim,n)=mpole2(idim,n)+mpole(idim,n)
+        enddo
         enddo
 c
         return
@@ -654,9 +659,9 @@ c
 c
 c
 c
-        subroutine h2dmpalloc(wlists,iaddr,nboxes,lmptot,nterms)
+        subroutine h2dmpalloc(nd,wlists,iaddr,nboxes,lmptot,nterms)
         implicit real *8 (a-h,o-z)
-        integer box(20)
+        integer box(15)
         integer nterms(0:*)
         integer iaddr(2,nboxes)
         real *8 center0(2),corners0(2,4)
@@ -671,15 +676,15 @@ c
         level=box(1)
 c
 c       ... first, allocate memory for the multipole expansion
-c       
+c
         iaddr(1,ibox)=iptr
-        iptr=iptr+(2*nterms(level)+1)*2
+        iptr=iptr+(2*nterms(level)+1)*nd
 c
 c       ... then, allocate memory for the local expansion
-c       
+c
         iaddr(2,ibox)=iptr
-        iptr=iptr+(2*nterms(level)+1)*2
-c       
+        iptr=iptr+(2*nterms(level)+1)*nd
+c
         enddo
         lmptot = iptr
         return

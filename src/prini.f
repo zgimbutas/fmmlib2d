@@ -1,11 +1,5 @@
-cc Copyright (C) 2010: Vladimir Rokhlin
-cc 
-cc This software is being released under a modified FreeBSD license
-cc (see COPYING in home directory). 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c    $Date$
-c    $Revision$
 c
 c
 c

@@ -1,12 +1,8 @@
-cc Copyright (C) 2009-2012: Leslie Greengard and Zydrunas Gimbutas
-cc Contact: greengard@cims.nyu.edu
-cc 
-cc This software is being released under a modified FreeBSD license
-cc (see COPYING in home directory). 
+cc SPDX-License-Identifier: BSD-3-Clause
+cc Copyright (C) 2010-2011: Leslie Greengard and Zydrunas Gimbutas
+cc See LICENSE file for full license text
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c    $Date$
-c    $Revision$
 c
 c
 c      This file contains the basic subroutines for 
@@ -478,7 +474,7 @@ c
 c
 c
 C***********************************************************************
-        subroutine l2dformmp(ier,rscale,source,charge,ns,center,
+        subroutine l2dformmp(ier,nd,rscale,source,charge,ns,center,
      1                       nterms,mpole)
         implicit real *8 (a-h,o-z)
 C***********************************************************************
@@ -486,18 +482,19 @@ c
 c     This subroutine constructs a multipole expansion about CENTER due
 c     to NS sources located at SOURCES(2,*).
 c
-c     mpole_0  =  sum charge_j 
-c                  j  
+c     mpole_0  =  sum charge_j
+c                  j
 c
 c     mpole_n  = -sum charge_j 1/n (z)^n /rscale^n
-c                  j  
+c                  j
 c
 c-----------------------------------------------------------------------
 c     INPUT:
 c
+c     nd              : number of densities
 c     rscale          : the scaling factor.
 c     source(2,ns)    : coordinates of sources
-c     charge(ns)      : source strengths
+c     charge(nd,ns)   : source strengths
 c     ns              : number of sources
 c     center(2)       : expansion center
 c     nterms          : order of multipole expansion
@@ -509,7 +506,8 @@ c                 ier=0 returned successfully;
 c
 c     mpole     : coeffs for the multipole-expansion
 c
-        complex *16 mpole(0:nterms),charge(ns)
+        integer nd,ns,nterms
+        complex *16 mpole(nd,0:nterms),charge(nd,ns)
         real *8 center(2),source(2,ns),zdiff(2)
 
         complex *16 zmul,zinv,ztemp1,ztemp2
@@ -519,7 +517,9 @@ c
 c
 c
         do n=0,nterms
-        mpole(n)=0
+        do idim=1,nd
+        mpole(idim,n)=0
+        enddo
         enddo
 
         do j=1,ns
@@ -529,12 +529,16 @@ c
 ccc        call h2cart2polar(zdiff,r,theta)
         z0=dcmplx(zdiff(1),zdiff(2))
 c
-        mpole(0)=mpole(0)+charge(j)
+        do idim=1,nd
+        mpole(idim,0)=mpole(idim,0)+charge(idim,j)
+        enddo
 c
         ztemp1=z0/rscale
         ztemp2=ztemp1
         do n=1,nterms
-        mpole(n)=mpole(n)-charge(j)*ztemp1/n
+        do idim=1,nd
+        mpole(idim,n)=mpole(idim,n)-charge(idim,j)*ztemp1/n
+        enddo
         ztemp1=ztemp1*ztemp2
         enddo
 
@@ -548,7 +552,7 @@ c
 c
 c
 C***********************************************************************
-        subroutine l2dformta(ier,rscale,source,charge,ns,center,
+        subroutine l2dformta(ier,nd,rscale,source,charge,ns,center,
      1                       nterms,mpole)
         implicit real *8 (a-h,o-z)
 C***********************************************************************
@@ -556,18 +560,19 @@ c
 c     This subroutine constructs a local expansion about CENTER due
 c     to NS sources located at SOURCES(2,*).
 c
-c     mpole_0  =  sum charge_j log(abs(z)) 
-c                  j  
+c     mpole_0  =  sum charge_j log(abs(z))
+c                  j
 c
 c     mpole_n  = -sum charge_j 1/n (1/z)^n *rscale^n
-c                  j  
+c                  j
 c
 c-----------------------------------------------------------------------
 c     INPUT:
 c
+c     nd              : number of densities
 c     rscale          : the scaling factor.
 c     source(2,ns)    : coordinates of sources
-c     charge(ns)      : source strengths
+c     charge(nd,ns)   : source strengths
 c     ns              : number of sources
 c     center(2)       : expansion center
 c     nterms          : order of local expansion
@@ -579,7 +584,8 @@ c                 ier=0 returned successfully;
 c
 c     mpole     : coeffs for the multipole-expansion
 c
-        complex *16 mpole(0:nterms),charge(ns)
+        integer nd,ns,nterms
+        complex *16 mpole(nd,0:nterms),charge(nd,ns)
         real *8 center(2),source(2,ns),zdiff(2)
 
         complex *16 zmul,zinv,ztemp1,ztemp2
@@ -589,7 +595,9 @@ c
 c
 c
         do n=0,nterms
-        mpole(n)=0
+        do idim=1,nd
+        mpole(idim,n)=0
+        enddo
         enddo
 
         do j=1,ns
@@ -599,12 +607,16 @@ c
 ccc        call h2cart2polar(zdiff,r,theta)
         z0=dcmplx(zdiff(1),zdiff(2))
 c
-        mpole(0)=mpole(0)+charge(j)*log(abs(-z0))
+        do idim=1,nd
+        mpole(idim,0)=mpole(idim,0)+charge(idim,j)*log(abs(-z0))
+        enddo
 c
         zinv=rscale/z0
         ztemp1=zinv
         do n=1,nterms
-        mpole(n)=mpole(n)-charge(j)*ztemp1/n
+        do idim=1,nd
+        mpole(idim,n)=mpole(idim,n)-charge(idim,j)*ztemp1/n
+        enddo
         ztemp1=ztemp1*zinv
         enddo
 
@@ -618,7 +630,7 @@ c
 c
 c
 C***********************************************************************
-        subroutine l2dformta_add(ier,rscale,source,charge,ns,center,
+        subroutine l2dformta_add(ier,nd,rscale,source,charge,ns,center,
      1                       nterms,mpole)
         implicit real *8 (a-h,o-z)
 C***********************************************************************
@@ -626,18 +638,19 @@ c
 c     This subroutine constructs a local expansion about CENTER due
 c     to NS sources located at SOURCES(2,*).
 c
-c     mpole_0  =  sum charge_j log(abs(z)) 
-c                  j  
+c     mpole_0  =  sum charge_j log(abs(z))
+c                  j
 c
 c     mpole_n  = -sum charge_j 1/n (1/z)^n *rscale^n
-c                  j  
+c                  j
 c
 c-----------------------------------------------------------------------
 c     INPUT:
 c
+c     nd              : number of densities
 c     rscale          : the scaling factor.
 c     source(2,ns)    : coordinates of sources
-c     charge(ns)      : source strengths
+c     charge(nd,ns)   : source strengths
 c     ns              : number of sources
 c     center(2)       : expansion center
 c     nterms          : order of local expansion
@@ -649,7 +662,8 @@ c                 ier=0 returned successfully;
 c
 c     mpole     : coeffs for the multipole-expansion
 c
-        complex *16 mpole(0:nterms),charge(ns)
+        integer nd,ns,nterms
+        complex *16 mpole(nd,0:nterms),charge(nd,ns)
         real *8 center(2),source(2,ns),zdiff(2)
 
         complex *16 zmul,zinv,ztemp1,ztemp2
@@ -665,12 +679,16 @@ c
 ccc        call h2cart2polar(zdiff,r,theta)
         z0=dcmplx(zdiff(1),zdiff(2))
 c
-        mpole(0)=mpole(0)+charge(j)*log(abs(-z0))
+        do idim=1,nd
+        mpole(idim,0)=mpole(idim,0)+charge(idim,j)*log(abs(-z0))
+        enddo
 c
         zinv=rscale/z0
         ztemp1=zinv
         do n=1,nterms
-        mpole(n)=mpole(n)-charge(j)*ztemp1/n
+        do idim=1,nd
+        mpole(idim,n)=mpole(idim,n)-charge(idim,j)*ztemp1/n
+        enddo
         ztemp1=ztemp1*zinv
         enddo
 
@@ -683,7 +701,7 @@ c
 c
 c
 c
-        subroutine l2dmpmp(
+        subroutine l2dmpmp(nd,
      $     rscale1,center1,hexp,nterms1,
      $     rscale2,center2,jexp,nterms2)
         implicit real *8 (a-h,o-z)
@@ -695,6 +713,7 @@ C
 C---------------------------------------------------------------------
 C     INPUT:
 C
+C           nd      = number of densities
 C           rscale1 = scaling parameter for original multipole expansion
 C           center1 = center of original multiple expansion
 C           hexp    = coefficients of original multiple expansion
@@ -707,7 +726,7 @@ C     OUTPUT:
 C
 C           jexp    = coefficients of shifted multipole expansion
 c
-        complex *16 hexp(0:nterms1),jexp(0:nterms2)
+        complex *16 hexp(nd,0:nterms1),jexp(nd,0:nterms2)
         real *8 center1(2),center2(2),zdiff(2)
         complex *16 z,z0,ima, zmul,zinv,ztemp1,ztemp2
         real *8, allocatable :: carray(:,:)
@@ -761,15 +780,22 @@ ccc        allocate( z0pow2(0:nmax) )
         enddo
 c
         do i = 0,nterms2
-        jexp(i) = 0
+        do idim=1,nd
+        jexp(idim,i) = 0
+        enddo
         enddo
 c
-        jexp(0) = hexp(0)
+        do idim=1,nd
+        jexp(idim,0) = hexp(idim,0)
+        enddo
+c
         do i = 1,nterms2
-        jexp(i) = jexp(i) - hexp(0)*z0pow2(i)/i
+        do idim=1,nd
+        jexp(idim,i) = jexp(idim,i) - hexp(idim,0)*z0pow2(i)/i
         do j = 1,min(i,nterms1)
-        jexp(i) = jexp(i) +
-     $     hexp(j)*z0pow2(i)/z0pow1(j)*carray(i-1,j-1)
+        jexp(idim,i) = jexp(idim,i) +
+     $     hexp(idim,j)*z0pow2(i)/z0pow1(j)*carray(i-1,j-1)
+        enddo
         enddo
         enddo
 c
@@ -782,7 +808,7 @@ c
 c
 c
 c
-        subroutine l2dmploc(
+        subroutine l2dmploc(nd,
      $     rscale1,center1,hexp,nterms1,
      $     rscale2,center2,jexp,nterms2)
         implicit real *8 (a-h,o-z)
@@ -794,6 +820,7 @@ C
 C---------------------------------------------------------------------
 C     INPUT:
 C
+C           nd      = number of densities
 C           rscale1 = scaling parameter for original multipole expansion
 C           center1 = center of original multiple expansion
 C           hexp    = coefficients of original multiple expansion
@@ -806,7 +833,7 @@ C     OUTPUT:
 C
 C           jexp    = coefficients of shifted local expansion
 c
-        complex *16 hexp(0:nterms1),jexp(0:nterms2)
+        complex *16 hexp(nd,0:nterms1),jexp(nd,0:nterms2)
         real *8 center1(2),center2(2),zdiff(2)
         complex *16 z,z0,ima, zmul,zinv,ztemp1,ztemp2
         real *8, allocatable :: carray(:,:)
@@ -845,7 +872,7 @@ ccc        allocate( z0pow(0:nmax) )
         z0pow(0)=1
         do i=1,nmax
         z0pow(i)=ztemp1
-        ztemp1=ztemp1*ztemp2        
+        ztemp1=ztemp1*ztemp2
         enddo
 c
 ccc        allocate( z0powm(0:nmax) )
@@ -859,25 +886,33 @@ ccc        allocate( z0powm(0:nmax) )
 c
 c
         do i = 0,nterms2
-        jexp(i) = 0
+        do idim=1,nd
+        jexp(idim,i) = 0
+        enddo
         enddo
 c
-        jexp(0) = hexp(0)*log(abs(-z0))
+        do idim=1,nd
+        jexp(idim,0) = hexp(idim,0)*log(abs(-z0))
         do j = 1,nterms1
-        jexp(0) = jexp(0) + hexp(j)*rscale1**j*z0powm(j)
+        jexp(idim,0) = jexp(idim,0) + hexp(idim,j)*rscale1**j*z0powm(j)
         enddo
-
+        enddo
+c
         do i = 1,nterms2
-        jexp(i) = jexp(i) - hexp(0)/i
+        do idim=1,nd
+        jexp(idim,i) = jexp(idim,i) - hexp(idim,0)/i
         do j = 1,nterms1
-        jexp(i) = jexp(i) + hexp(j)*rscale1**j
+        jexp(idim,i) = jexp(idim,i) + hexp(idim,j)*rscale1**j
      $     *z0powm(j)*carray(i+j-1,j-1)
         enddo
-        jexp(i) = jexp(i)*z0pow(i)
+        jexp(idim,i) = jexp(idim,i)*z0pow(i)
+        enddo
         enddo
 c
         do i = 1,nterms2
-        jexp(i) = jexp(i) *rscale2**i
+        do idim=1,nd
+        jexp(idim,i) = jexp(idim,i) *rscale2**i
+        enddo
         enddo
 c
         return
@@ -986,7 +1021,7 @@ c
 c
 c
 c
-        subroutine l2dlocloc(
+        subroutine l2dlocloc(nd,
      $     rscale1,center1,hexp,nterms1,
      $     rscale2,center2,jexp,nterms2)
         implicit real *8 (a-h,o-z)
@@ -998,6 +1033,7 @@ C
 C---------------------------------------------------------------------
 C     INPUT:
 C
+C           nd      = number of densities
 C           rscale1 = scaling parameter for original local expansion
 C           center1 = center of original multiple expansion
 C           hexp    = coefficients of original multiple expansion
@@ -1010,7 +1046,7 @@ C     OUTPUT:
 C
 C           jexp    = coefficients of shifted local expansion
 c
-        complex *16 hexp(0:nterms1),jexp(0:nterms2)
+        complex *16 hexp(nd,0:nterms1),jexp(nd,0:nterms2)
         real *8 center1(2),center2(2),zdiff(2)
         complex *16 z,z0,ima, zmul,zinv,ztemp1,ztemp2
         real *8, allocatable :: carray(:,:)
@@ -1064,13 +1100,17 @@ ccc        allocate( z0powm2(0:nmax) )
         enddo
 c
         do i = 0,nterms2
-        jexp(i) = 0
+        do idim=1,nd
+        jexp(idim,i) = 0
+        enddo
         enddo
 c
         do i = 0,nterms2
         do j = i,nterms1
-        jexp(i) = jexp(i) + hexp(j)
+        do idim=1,nd
+        jexp(idim,i) = jexp(idim,i) + hexp(idim,j)
      $     *z0powm1(j)/z0powm2(i)*carray(j,i)
+        enddo
         enddo
         enddo
 c
@@ -1081,7 +1121,7 @@ c
 c
 c
 c
-        subroutine l2dmpmp_carray(
+        subroutine l2dmpmp_carray(nd,
      $     rscale1,center1,hexp,nterms1,
      $     rscale2,center2,jexp,nterms2,
      $     carray,ldc)
@@ -1094,6 +1134,7 @@ C
 C---------------------------------------------------------------------
 C     INPUT:
 C
+C           nd      = number of densities
 C           rscale1 = scaling parameter for original multipole expansion
 C           center1 = center of original multiple expansion
 C           hexp    = coefficients of original multiple expansion
@@ -1106,7 +1147,7 @@ C     OUTPUT:
 C
 C           jexp    = coefficients of shifted multipole expansion
 c
-        complex *16 hexp(0:nterms1),jexp(0:nterms2)
+        complex *16 hexp(nd,0:nterms1),jexp(nd,0:nterms2)
         real *8 center1(2),center2(2),zdiff(2)
         complex *16 z,z0,ima, zmul,zinv,ztemp1,ztemp2
         real *8 carray(0:ldc,0:ldc)
@@ -1114,7 +1155,7 @@ c
 ccc        complex *16, allocatable :: z0pow1(:), z0pow2(:)
         complex *16 z0pow1(0:1000), z0pow2(0:1000)
         real *8 rfactors(0:1000)
-        complex *16 hexp1(0:1000)
+        complex *16 hexp1(10,0:1000)
 c
         data ima/(0.0d0,1.0d0)/
 c
@@ -1154,21 +1195,23 @@ c
         rfactors(i)=rfactors(i-1)*(rscale1/rscale2)
         enddo
 c
+        do idim=1,nd
         do i = 0,nterms2
-        jexp(i) = 0
+        jexp(idim,i) = 0
         enddo
 c
         do i = 0,nterms1
-        hexp1(i) = hexp(i)*z0pow1(i)
+        hexp1(idim,i) = hexp(idim,i)*z0pow1(i)
         enddo
 c
-        jexp(0) = hexp(0)
+        jexp(idim,0) = hexp(idim,0)
         do i = 1,nterms2
-        jexp(i) = jexp(i) - hexp1(0)/i
+        jexp(idim,i) = jexp(idim,i) - hexp1(idim,0)/i
         do j = 1,min(i,nterms1)
-        jexp(i) = jexp(i) + hexp1(j)*carray(i-1,j-1)
+        jexp(idim,i) = jexp(idim,i) + hexp1(idim,j)*carray(i-1,j-1)
         enddo
-        jexp(i)=jexp(i)*z0pow2(i)
+        jexp(idim,i)=jexp(idim,i)*z0pow2(i)
+        enddo
         enddo
 c
 ccc        call prin2('jexp=*',jexp,2*(nterms2+1))
@@ -1180,7 +1223,7 @@ c
 c
 c
 c
-        subroutine l2dmploc_carray(
+        subroutine l2dmploc_carray(nd,
      $     rscale1,center1,hexp,nterms1,
      $     rscale2,center2,jexp,nterms2,
      $     carray,ldc)
@@ -1193,6 +1236,7 @@ C
 C---------------------------------------------------------------------
 C     INPUT:
 C
+C           nd      = number of densities
 C           rscale1 = scaling parameter for original multipole expansion
 C           center1 = center of original multiple expansion
 C           hexp    = coefficients of original multiple expansion
@@ -1205,13 +1249,13 @@ C     OUTPUT:
 C
 C           jexp    = coefficients of shifted local expansion
 c
-        complex *16 hexp(0:nterms1),jexp(0:nterms2)
+        complex *16 hexp(nd,0:nterms1),jexp(nd,0:nterms2)
         real *8 center1(2),center2(2),zdiff(2)
         complex *16 z,z0,ima, zmul,zinv,ztemp1,ztemp2,ztemp3
         real *8 carray(0:ldc,0:ldc)
 cccc        complex *16, allocatable :: z0pow(:), z0powm(:)
         complex *16 z0pow(0:1000), z0powm(0:1000)
-        complex *16 hexp1(0:1000)
+        complex *16 hexp1(10,0:1000)
 c
         data ima/(0.0d0,1.0d0)/
 c
@@ -1243,25 +1287,27 @@ ccc        allocate( z0powm(0:nmax) )
         enddo
 
 c
+        do idim=1,nd
         do i = 0,nterms2
-        jexp(i) = 0
+        jexp(idim,i) = 0
         enddo
 c
         do i = 0,nterms1
-        hexp1(i) = hexp(i)*z0powm(i)
+        hexp1(idim,i) = hexp(idim,i)*z0powm(i)
         enddo
 c
-        jexp(0) = hexp1(0)*log(abs(-z0))
+        jexp(idim,0) = hexp1(idim,0)*log(abs(-z0))
         do j = 1,nterms1
-        jexp(0) = jexp(0) + hexp1(j)
+        jexp(idim,0) = jexp(idim,0) + hexp1(idim,j)
         enddo
 
         do i = 1,nterms2
-        jexp(i) = jexp(i) - hexp1(0)/i
+        jexp(idim,i) = jexp(idim,i) - hexp1(idim,0)/i
         do j = 1,nterms1
-        jexp(i) = jexp(i) + hexp1(j)*carray(i+j-1,j-1)
+        jexp(idim,i) = jexp(idim,i) + hexp1(idim,j)*carray(i+j-1,j-1)
         enddo
-        jexp(i) = jexp(i)*z0pow(i) 
+        jexp(idim,i) = jexp(idim,i)*z0pow(i)
+        enddo
         enddo
 c
 ccc        call prin2('jexp=*',jexp,2*(nterms2+1))
@@ -1273,7 +1319,7 @@ c
 c
 c
 c
-        subroutine l2dlocloc_carray(
+        subroutine l2dlocloc_carray(nd,
      $     rscale1,center1,hexp,nterms1,
      $     rscale2,center2,jexp,nterms2,
      $     carray,ldc)
@@ -1286,6 +1332,7 @@ C
 C---------------------------------------------------------------------
 C     INPUT:
 C
+C           nd      = number of densities
 C           rscale1 = scaling parameter for original local expansion
 C           center1 = center of original multiple expansion
 C           hexp    = coefficients of original multiple expansion
@@ -1298,13 +1345,13 @@ C     OUTPUT:
 C
 C           jexp    = coefficients of shifted local expansion
 c
-        complex *16 hexp(0:nterms1),jexp(0:nterms2)
+        complex *16 hexp(nd,0:nterms1),jexp(nd,0:nterms2)
         real *8 center1(2),center2(2),zdiff(2)
         complex *16 z,z0,ima, zmul,zinv,ztemp1,ztemp2
         real *8 carray(0:ldc,0:ldc)
 ccc        complex *16, allocatable :: z0powm1(:), z0powm2(:)
         complex *16 z0powm1(0:ldc), z0powm2(0:ldc)
-        complex *16 hexp1(0:1000)
+        complex *16 hexp1(10,0:1000)
 c
         data ima/(0.0d0,1.0d0)/
 c
@@ -1339,19 +1386,21 @@ ccc        allocate( z0powm2(0:nmax) )
         ztemp1=ztemp1*ztemp2
         enddo
 c
+        do idim=1,nd
         do i = 0,nterms2
-        jexp(i) = 0
+        jexp(idim,i) = 0
         enddo
 c
         do i = 0,nterms1
-        hexp1(i) = hexp(i)*z0powm1(i)
+        hexp1(idim,i) = hexp(idim,i)*z0powm1(i)
         enddo
 c
         do i = 0,nterms2
         do j = i,nterms1
-        jexp(i) = jexp(i) + hexp1(j)*carray(j,i)
+        jexp(idim,i) = jexp(idim,i) + hexp1(idim,j)*carray(j,i)
         enddo
-        jexp(i) = jexp(i)*z0powm2(i)
+        jexp(idim,i) = jexp(idim,i)*z0powm2(i)
+        enddo
         enddo
 c
         return
@@ -1362,26 +1411,28 @@ c
 c
 c
 C***********************************************************************
-        subroutine l2dformmp_dp(ier,rscale,source,dipstr,ns,center,
+        subroutine l2dformmp_dp(ier,nd,rscale,source,dipstr,ns,center,
      1                       nterms,mpole)
         implicit real *8 (a-h,o-z)
+        integer nd,ns,nterms
 C***********************************************************************
 c
 c     This subroutine constructs a multipole expansion about CENTER due
 c     to NS sources located at SOURCES(2,*).
 c
 c     mpole_0  =  0
-c                 
+c
 c
 c     mpole_n  =  sum dipstr_j (z_0)^(n-1)/z^n /rscale^n
-c                  j  
+c                  j
 c
 c-----------------------------------------------------------------------
 c     INPUT:
 c
+c     nd              : number of densities
 c     rscale          : the scaling factor.
 c     source(2,ns)    : coordinates of sources
-c     dipstr(ns)      : source strengths
+c     dipstr(nd,ns)   : source strengths
 c     ns              : number of sources
 c     center(2)       : expansion center
 c     nterms          : order of multipole expansion
@@ -1393,7 +1444,7 @@ c                 ier=0 returned successfully;
 c
 c     mpole     : coeffs for the multipole-expansion
 c
-        complex *16 mpole(0:nterms),dipstr(ns)
+        complex *16 mpole(nd,0:nterms),dipstr(nd,ns)
         real *8 center(2),source(2,ns),zdiff(2)
 
         complex *16 zmul,zinv,ztemp1,ztemp2
@@ -1403,7 +1454,9 @@ c
 c
 c
         do n=0,nterms
-        mpole(n)=0
+        do idim=1,nd
+        mpole(idim,n)=0
+        enddo
         enddo
 
         do j=1,ns
@@ -1417,7 +1470,9 @@ c
         zmul=z0/rscale
         ztemp1=1/rscale
         do n=1,nterms
-        mpole(n)=mpole(n)+dipstr(j)*ztemp1
+        do idim=1,nd
+        mpole(idim,n)=mpole(idim,n)+dipstr(idim,j)*ztemp1
+        enddo
         ztemp1=ztemp1*zmul
         enddo
 
@@ -1431,23 +1486,25 @@ c
 c
 c
 C***********************************************************************
-        subroutine l2dformta_dp(ier,rscale,source,dipstr,ns,center,
+        subroutine l2dformta_dp(ier,nd,rscale,source,dipstr,ns,center,
      1                       nterms,mpole)
         implicit real *8 (a-h,o-z)
+        integer nd,ns,nterms
 C***********************************************************************
 c
 c     This subroutine constructs a local expansion about CENTER due
 c     to NS sources located at SOURCES(2,*).
 c
 c     mpole_n  = -sum dipstr_j (z_0)^(n-1)/z^n /rscale^n
-c                  j  
+c                  j
 c
 c-----------------------------------------------------------------------
 c     INPUT:
 c
+c     nd              : number of densities
 c     rscale          : the scaling factor.
 c     source(2,ns)    : coordinates of sources
-c     dipstr(ns)      : source strengths
+c     dipstr(nd,ns)   : source strengths
 c     ns              : number of sources
 c     center(2)       : expansion center
 c     nterms          : order of local expansion
@@ -1459,7 +1516,7 @@ c                 ier=0 returned successfully;
 c
 c     mpole     : coeffs for the multipole-expansion
 c
-        complex *16 mpole(0:nterms),dipstr(ns)
+        complex *16 mpole(nd,0:nterms),dipstr(nd,ns)
         real *8 center(2),source(2,ns),zdiff(2)
 
         complex *16 zmul,zinv,ztemp1,ztemp2
@@ -1469,7 +1526,9 @@ c
 c
 c
         do n=0,nterms
-        mpole(n)=0
+        do idim=1,nd
+        mpole(idim,n)=0
+        enddo
         enddo
 
         do j=1,ns
@@ -1482,7 +1541,9 @@ c
         zinv=rscale/z0
         ztemp1=zinv/rscale
         do n=0,nterms
-        mpole(n)=mpole(n)-dipstr(j)*ztemp1
+        do idim=1,nd
+        mpole(idim,n)=mpole(idim,n)-dipstr(idim,j)*ztemp1
+        enddo
         ztemp1=ztemp1*zinv
         enddo
 
@@ -1496,23 +1557,25 @@ c
 c
 c
 C***********************************************************************
-        subroutine l2dformta_dp_add(ier,rscale,source,dipstr,ns,center,
-     1                       nterms,mpole)
+        subroutine l2dformta_dp_add(ier,nd,rscale,source,dipstr,ns,
+     1                       center,nterms,mpole)
         implicit real *8 (a-h,o-z)
+        integer nd,ns,nterms
 C***********************************************************************
 c
 c     This subroutine constructs a local expansion about CENTER due
 c     to NS sources located at SOURCES(2,*).
 c
 c     mpole_n  = -sum dipstr_j (z_0)^(n-1)/z^n /rscale^n
-c                  j  
+c                  j
 c
 c-----------------------------------------------------------------------
 c     INPUT:
 c
+c     nd              : number of densities
 c     rscale          : the scaling factor.
 c     source(2,ns)    : coordinates of sources
-c     dipstr(ns)      : source strengths
+c     dipstr(nd,ns)   : source strengths
 c     ns              : number of sources
 c     center(2)       : expansion center
 c     nterms          : order of local expansion
@@ -1524,7 +1587,7 @@ c                 ier=0 returned successfully;
 c
 c     mpole     : coeffs for the multipole-expansion
 c
-        complex *16 mpole(0:nterms),dipstr(ns)
+        complex *16 mpole(nd,0:nterms),dipstr(nd,ns)
         real *8 center(2),source(2,ns),zdiff(2)
 
         complex *16 zmul,zinv,ztemp1,ztemp2
@@ -1543,7 +1606,9 @@ c
         zinv=rscale/z0
         ztemp1=zinv/rscale
         do n=0,nterms
-        mpole(n)=mpole(n)-dipstr(j)*ztemp1
+        do idim=1,nd
+        mpole(idim,n)=mpole(idim,n)-dipstr(idim,j)*ztemp1
+        enddo
         ztemp1=ztemp1*zinv
         enddo
 
@@ -2253,25 +2318,26 @@ c
 c     Multipole and local expansion evaluation routines for Cauchy sums
 c
 c**********************************************************************
-      subroutine c2dmpeval(rscale,center,mpole,nterms,ztarg,
+      subroutine c2dmpeval(nd,rscale,center,mpole,nterms,ztarg,
      1      ifpot,pot,ifgrad,grad,ifhess,hess)
       implicit real *8 (a-h,o-z)
 c**********************************************************************
 c
-c     This subroutine evaluates the potential and gradient of the 
+c     This subroutine evaluates the potential and gradient of the
 c     potential due to an outgoing partial wave expansion.
 c               +nterms
 c     pot  =      sum   mpole_n / z^n  + mpole_0 log(abs(z)), if ifpot = 1.
-c                n=1  
+c                n=1
 c     grad  = gradient(pot) if ifgrad = 1.
 c     hess = hessian if ifhess = 1.
 c
 c-----------------------------------------------------------------------
 c     INPUT:
 c
-c     rscale :    scaling parameter 
+c     nd     :    number of densities
+c     rscale :    scaling parameter
 c     center :    expansion center
-c     mpole  :    multipole expansion 
+c     mpole  :    multipole expansion
 c     nterms :    order of the multipole expansion
 c     ztarg  :    target location
 c     ifpot  :   flag controlling evaluation of potential:
@@ -2281,8 +2347,8 @@ c     ifgrad :   flag controlling evaluation of gradient:
 c                   ifgrad = 0, do not compute gradient.
 c                   ifgrad = 1, compute gradient.
 c     ifhess :   flag for computing Hessian:
-c	            ifhess = 0 -> don't compute 
-c		    ifhess = 1 -> do compute 
+c	            ifhess = 0 -> don't compute
+c		    ifhess = 1 -> do compute
 c-----------------------------------------------------------------------
 c     OUTPUT:
 c
@@ -2292,7 +2358,8 @@ c     hess   :    hessian at ztarg (if requested)
 c
 c-----------------------------------------------------------------------
 c
-        complex *16 pot,grad,hess,mpole(0:nterms)
+        integer nd,nterms
+        complex *16 pot(nd),grad(nd),hess(nd),mpole(nd,0:nterms)
         real *8 center(2),ztarg(2),zdiff(2)
         complex *16 ztemp1, ztemp2
 ccc        complex *16, allocatable :: z0pow(:), z0powm(:)
@@ -2319,20 +2386,24 @@ ccc        allocate( z0pow(0:nmax) )
         enddo
 c
 c
-        pot=mpole(0)*log(abs(z))
+        do idim=1,nd
+        pot(idim)=mpole(idim,0)*log(abs(z))
         do n=1,nterms
-        pot=pot+mpole(n)*z0pow(n)
+        pot(idim)=pot(idim)+mpole(idim,n)*z0pow(n)
+        enddo
         enddo
 c
 c
         if( ifgrad .eq. 1 ) then
 
         rinv=1/rscale
-        grad=mpole(0)*z0pow(1)
+        do idim=1,nd
+        grad(idim)=mpole(idim,0)*z0pow(1)
         do n=1,nterms
-        grad=grad-mpole(n)*z0pow(n+1)*n
+        grad(idim)=grad(idim)-mpole(idim,n)*z0pow(n+1)*n
         enddo
-        grad=grad*rinv
+        grad(idim)=grad(idim)*rinv
+        enddo
 
         endif
 c
@@ -2340,11 +2411,13 @@ c
         if( ifhess .eq. 1 ) then
 
         rinv2=1/rscale**2
-        hess=-mpole(0)*z0pow(2)
+        do idim=1,nd
+        hess(idim)=-mpole(idim,0)*z0pow(2)
         do n=1,nterms
-        hess=hess+mpole(n)*z0pow(n+2)*n*(n+1)
+        hess(idim)=hess(idim)+mpole(idim,n)*z0pow(n+2)*n*(n+1)
         enddo
-        hess=hess*rinv2
+        hess(idim)=hess(idim)*rinv2
+        enddo
 
         endif
 c
@@ -2357,25 +2430,26 @@ c
 c
 c
 c**********************************************************************
-      subroutine c2dtaeval(rscale,center,mpole,nterms,ztarg,
+      subroutine c2dtaeval(nd,rscale,center,mpole,nterms,ztarg,
      1      ifpot,pot,ifgrad,grad,ifhess,hess)
       implicit real *8 (a-h,o-z)
 c**********************************************************************
 c
-c     This subroutine evaluates the potential and gradient of the 
+c     This subroutine evaluates the potential and gradient of the
 c     potential due to an incoming partial wave expansion.
 c               +nterms
 c     pot  =      sum   mpole_n * z^n  + mpole_0, if ifpot = 1.
-c                n=1  
+c                n=1
 c     grad  = gradient(pot) if ifgrad = 1.
 c     hess = hessian if ifhess = 1.
 c
 c-----------------------------------------------------------------------
 c     INPUT:
 c
-c     rscale :    scaling parameter 
+c     nd     :    number of densities
+c     rscale :    scaling parameter
 c     center :    expansion center
-c     mpole  :    multipole expansion 
+c     mpole  :    multipole expansion
 c     nterms :    order of the local expansion
 c     ztarg  :    target location
 c     ifpot  :   flag controlling evaluation of potential:
@@ -2385,8 +2459,8 @@ c     ifgrad :   flag controlling evaluation of gradient:
 c                   ifgrad = 0, do not compute gradient.
 c                   ifgrad = 1, compute gradient.
 c     ifhess :   flag for computing Hessian:
-c	            ifhess = 0 -> don't compute 
-c		    ifhess = 1 -> do compute 
+c	            ifhess = 0 -> don't compute
+c		    ifhess = 1 -> do compute
 c-----------------------------------------------------------------------
 c     OUTPUT:
 c
@@ -2396,7 +2470,8 @@ c     hess   :    hessian at ztarg (if requested)
 c
 c-----------------------------------------------------------------------
 c
-        complex *16 pot,grad,hess,mpole(0:nterms)
+        integer nd,nterms
+        complex *16 pot(nd),grad(nd),hess(nd),mpole(nd,0:nterms)
         real *8 center(2),ztarg(2),zdiff(2)
         complex *16 ztemp1, ztemp2
 ccc        complex *16, allocatable :: z0pow(:), z0powm(:)
@@ -2425,34 +2500,38 @@ ccc        allocate( z0pow(0:nmax) )
 c
 c
 c
-        pot=mpole(0)
+        do idim=1,nd
+        pot(idim)=mpole(idim,0)
         do n=1,nterms
-        pot=pot+mpole(n)*z0pow(n)
+        pot(idim)=pot(idim)+mpole(idim,n)*z0pow(n)
+        enddo
         enddo
 c
 c
         if( ifgrad .eq. 1 ) then
 
-        grad=0
-
         rinv=1/rscale
+        do idim=1,nd
+        grad(idim)=0
         do n=1,nterms
-        grad=grad+mpole(n)*z0pow(n-1)*n
+        grad(idim)=grad(idim)+mpole(idim,n)*z0pow(n-1)*n
         enddo
-        grad=grad*rinv
+        grad(idim)=grad(idim)*rinv
+        enddo
 
         endif
 c
 c
         if( ifhess .eq. 1 ) then
 
-        hess=0
-
         rinv2=1/rscale**2
+        do idim=1,nd
+        hess(idim)=0
         do n=2,nterms
-        hess=hess+mpole(n)*z0pow(n-2)*n*(n-1)
+        hess(idim)=hess(idim)+mpole(idim,n)*z0pow(n-2)*n*(n-1)
         enddo
-        hess=hess*rinv2
+        hess(idim)=hess(idim)*rinv2
+        enddo
         endif
 c
 c
@@ -2464,25 +2543,26 @@ c
 c
 c
 c**********************************************************************
-      subroutine c2dmpevalall(rscale,center,mpole,nterms,ztarg,ntarg,
+      subroutine c2dmpevalall(nd,rscale,center,mpole,nterms,ztarg,ntarg,
      1      ifpot,pot,ifgrad,grad,ifhess,hess)
       implicit real *8 (a-h,o-z)
 c**********************************************************************
 c
-c     This subroutine evaluates the potential and gradient of the 
+c     This subroutine evaluates the potential and gradient of the
 c     potential due to an outgoing partial wave expansion.
 c               +nterms
 c     pot  =      sum   mpole_n / z^n  + mpole_0 log(abs(z)) if ifgrad = 1.
-c                n=1  
+c                n=1
 c     grad  = gradient(pot) if ifgrad = 1.
 c     hess = hessian if ifhess = 1.
 c
 c-----------------------------------------------------------------------
 c     INPUT:
 c
-c     rscale :    scaling parameter 
+c     nd     :    number of densities
+c     rscale :    scaling parameter
 c     center :    expansion center
-c     mpole  :    multipole expansion 
+c     mpole  :    multipole expansion
 c     nterms :    order of the multipole expansion
 c     ztarg  :    target location
 c     ifpot  :   flag controlling evaluation of potential:
@@ -2492,8 +2572,8 @@ c     ifgrad :   flag controlling evaluation of gradient:
 c                   ifgrad = 0, do not compute gradient.
 c                   ifgrad = 1, compute gradient.
 c     ifhess :   flag for computing Hessian:
-c	            ifhess = 0 -> don't compute 
-c		    ifhess = 1 -> do compute 
+c	            ifhess = 0 -> don't compute
+c		    ifhess = 1 -> do compute
 c-----------------------------------------------------------------------
 c     OUTPUT:
 c
@@ -2503,22 +2583,31 @@ c     hess   :    hessian at ztarg (if requested)
 c
 c-----------------------------------------------------------------------
 c
-        complex *16 pot(1),grad(1),hess(1),mpole(0:nterms)
-        complex *16 potloc,gradloc,hessloc
+        integer nd,nterms,ntarg
+        complex *16 pot(nd,1),grad(nd,1),hess(nd,1),mpole(nd,0:nterms)
+        complex *16 potloc(nd),gradloc(nd),hessloc(nd)
         real *8 center(2),ztarg(2,ntarg),zdiff(2)
 c
         complex *16 ima,z
         data ima/(0.0d0,1.0d0)/
 c
         do i = 1,ntarg
-        call c2dmpeval(rscale,center,mpole,nterms,ztarg(1,i),
+        call c2dmpeval(nd,rscale,center,mpole,nterms,ztarg(1,i),
      1     ifpot,potloc,ifgrad,gradloc,ifhess,hessloc)
-        if (ifpot.eq.1) pot(i) = pot(i) + potloc
+        if (ifpot.eq.1) then
+        do idim=1,nd
+        pot(idim,i) = pot(idim,i) + potloc(idim)
+        enddo
+        endif
         if (ifgrad.eq.1) then
-        grad(i) = grad(i) + gradloc
+        do idim=1,nd
+        grad(idim,i) = grad(idim,i) + gradloc(idim)
+        enddo
         endif
         if (ifhess.eq.1) then
-        hess(i) = hess(i) + hessloc
+        do idim=1,nd
+        hess(idim,i) = hess(idim,i) + hessloc(idim)
+        enddo
         endif
         enddo
 c
@@ -2528,25 +2617,26 @@ c
 c
 c
 c**********************************************************************
-      subroutine c2dtaevalall(rscale,center,mpole,nterms,ztarg,ntarg,
+      subroutine c2dtaevalall(nd,rscale,center,mpole,nterms,ztarg,ntarg,
      1      ifpot,pot,ifgrad,grad,ifhess,hess)
       implicit real *8 (a-h,o-z)
 c**********************************************************************
 c
-c     This subroutine evaluates the potential and gradient of the 
+c     This subroutine evaluates the potential and gradient of the
 c     potential due to an incoming partial wave expansion.
 c               +nterms
 c     pot  =      sum   mpole_n * z^n  + mpole_0 if ifpot = 1.
-c                n=1  
+c                n=1
 c     grad  = gradient(pot) if ifgrad = 1.
 c     hess = hessian if ifhess = 1.
 c
 c-----------------------------------------------------------------------
 c     INPUT:
 c
-c     rscale :    scaling parameter 
+c     nd     :    number of densities
+c     rscale :    scaling parameter
 c     center :    expansion center
-c     mpole  :    multipole expansion 
+c     mpole  :    multipole expansion
 c     nterms :    order of the local expansion
 c     ztarg  :    target location
 c     ifpot  :   flag controlling evaluation of potential:
@@ -2556,8 +2646,8 @@ c     ifgrad :   flag controlling evaluation of gradient:
 c                   ifgrad = 0, do not compute gradient.
 c                   ifgrad = 1, compute gradient.
 c     ifhess :   flag for computing Hessian:
-c	            ifhess = 0 -> don't compute 
-c		    ifhess = 1 -> do compute 
+c	            ifhess = 0 -> don't compute
+c		    ifhess = 1 -> do compute
 c-----------------------------------------------------------------------
 c     OUTPUT:
 c
@@ -2567,22 +2657,31 @@ c     hess   :    hessian at ztarg (if requested)
 c
 c-----------------------------------------------------------------------
 c
-        complex *16 pot(1),grad(1),hess(1),mpole(0:nterms)
-        complex *16 potloc,gradloc,hessloc
+        integer nd,nterms,ntarg
+        complex *16 pot(nd,1),grad(nd,1),hess(nd,1),mpole(nd,0:nterms)
+        complex *16 potloc(nd),gradloc(nd),hessloc(nd)
         real *8 center(2),ztarg(2,ntarg),zdiff(2)
 c
         complex *16 ima,z
         data ima/(0.0d0,1.0d0)/
 c
         do i = 1,ntarg
-        call c2dtaeval(rscale,center,mpole,nterms,ztarg(1,i),
+        call c2dtaeval(nd,rscale,center,mpole,nterms,ztarg(1,i),
      1     ifpot,potloc,ifgrad,gradloc,ifhess,hessloc)
-        if (ifpot.eq.1) pot(i) = pot(i) + potloc
+        if (ifpot.eq.1) then
+        do idim=1,nd
+        pot(idim,i) = pot(idim,i) + potloc(idim)
+        enddo
+        endif
         if (ifgrad.eq.1) then
-        grad(i) = grad(i) + gradloc
+        do idim=1,nd
+        grad(idim,i) = grad(idim,i) + gradloc(idim)
+        enddo
         endif
         if (ifhess.eq.1) then
-        hess(i) = hess(i) + hessloc
+        do idim=1,nd
+        hess(idim,i) = hess(idim,i) + hessloc(idim)
+        enddo
         endif
         enddo
 c
