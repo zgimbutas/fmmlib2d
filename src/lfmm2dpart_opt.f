@@ -21,17 +21,17 @@ c                   + dipstr_j (dipvec_j \dot (x_i-x_j)) * (-1/|x_i-x_j|^2)
 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c     lfmm2dpart - Laplace FMM in R^2: evaluate all pairwise particle
+c     lfmm2dpart_opt_nd - Laplace FMM in R^2: evaluate all pairwise particle
 c         interactions (ignoring self-interaction)
 c
-c     lfmm2dpartself - Laplace FMM in R^2: evaluate all pairwise particle
+c     lfmm2dpartself_opt_nd - Laplace FMM in R^2: evaluate all pairwise particle
 c         interactions (ignoring self-interaction)
 c
-c     lfmm2dparttarg - Laplace FMM in R^2: evaluate all pairwise
+c     lfmm2dparttarg_opt_nd - Laplace FMM in R^2: evaluate all pairwise
 c         particle interactions (ignoring self-interaction) +
 c         interactions with targets
 c
-c     l2dpartdirect - Laplace interactions in R^2:  evaluate all
+c     l2dpartdirect_opt_nd - Laplace interactions in R^2:  evaluate all
 c         pairwise particle interactions (ignoring self-interaction) +
 c         interactions with targets via direct O(N^2) algorithm
 c
@@ -44,7 +44,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c
 c
-        subroutine lfmm2dpart(ier,iprec,nd,nsource,source,
+        subroutine lfmm2dpart_opt_nd(ier,iprec,nd,nsource,source,
      $     ifcharge,charge,ifdipole,dipstr,dipvec,
      $     ifpot,pot,ifgrad,grad,ifhess,hess)
         implicit real *8 (a-h,o-z)
@@ -93,7 +93,7 @@ c
         ifgradtarg=0
         ifhesstarg=0
 c
-        call lfmm2dparttarg(ier,iprec,nd,nsource,source,
+        call lfmm2dparttarg_opt_nd(ier,iprec,nd,nsource,source,
      $     ifcharge,charge,ifdipole,dipstr,dipvec,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     ntarget,target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -106,7 +106,7 @@ c
 c
 c
 c
-        subroutine lfmm2dpartself(ier,iprec,nd,nsource,source,
+        subroutine lfmm2dpartself_opt_nd(ier,iprec,nd,nsource,source,
      $     ifcharge,charge,ifdipole,dipstr,dipvec,
      $     ifpot,pot,ifgrad,grad,ifhess,hess)
         implicit real *8 (a-h,o-z)
@@ -155,7 +155,7 @@ c
         ifgradtarg=0
         ifhesstarg=0
 c
-        call lfmm2dparttarg(ier,iprec,nd,nsource,source,
+        call lfmm2dparttarg_opt_nd(ier,iprec,nd,nsource,source,
      $     ifcharge,charge,ifdipole,dipstr,dipvec,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     ntarget,target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -168,7 +168,7 @@ c
 c
 c
 c
-        subroutine lfmm2dparttarg(ier,iprec,nd,nsource,source,
+        subroutine lfmm2dparttarg_opt_nd(ier,iprec,nd,nsource,source,
      $     ifcharge,charge,ifdipole,dipstr,dipvec,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     ntarget,target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -454,7 +454,7 @@ c
 c
 c
 c
-        subroutine l2dpartdirect(nd,nsource,
+        subroutine l2dpartdirect_opt_nd(nd,nsource,
      $     source,ifcharge,charge,ifdipole,dipstr,dipvec,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     ntarget,target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -628,12 +628,12 @@ c
 c
 c
 
-        subroutine lfmm2dpart_tree_build(ier,iprec,
+        subroutine lfmm2dpart_tree_build_opt(ier,iprec,
      $     nsource,source,ntarget,target,tree_handle)
         use fmm2d_tree_module
         implicit real *8 (a-h,o-z)
 c
-c       Build geometry-only tree for lfmm2dpart (Complex Laplace FMM).
+c       Build geometry-only tree for lfmm2dpart_opt_nd (Complex Laplace FMM).
 c       Tree is independent of nd and charge/dipole values.
 c       OPTIMIZED VERSION: Uses rfmm2d infrastructure for better performance.
 c
@@ -663,7 +663,7 @@ c
 c
 c
 c
-        subroutine lfmm2dpart_tree_eval(ier,tree_handle,nd,source,
+        subroutine lfmm2dpart_tree_eval_opt(ier,tree_handle,nd,source,
      $     ifcharge,charge,ifdipole,dipstr,dipvec,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -671,7 +671,7 @@ c
         use fmm2d_tree_module
         implicit real *8 (a-h,o-z)
 c
-c       Evaluate lfmm2dpart (Complex Laplace FMM) using pre-built tree.
+c       Evaluate lfmm2dpart_opt_nd (Complex Laplace FMM) using pre-built tree.
 c       OPTIMIZED VERSION: Uses rfmm2d with complex-as-real reinterpretation.
 c       Complex arrays with nd densities are treated as real arrays with 2*nd densities.
 c       This eliminates the double-evaluation overhead of the reference implementation.
@@ -680,7 +680,7 @@ c       Strategy: For complex lfmm2d input (nd densities), create 2*nd real
 c       rfmm2d densities where density 2*i-1 has real parts and density 2*i has imag parts.
 c
 c       INPUT PARAMETERS:
-c       tree_handle: integer handle from lfmm2dpart_tree_build
+c       tree_handle: integer handle from lfmm2dpart_tree_build_opt
 c       nd: number of densities
 c       source: real *8 (2,nsource): source locations
 c       ifcharge: charge flag
@@ -910,14 +910,14 @@ c
 c
 c
 c
-        subroutine lfmm2dpart_tree_free(tree_handle)
+        subroutine lfmm2dpart_tree_free_opt(tree_handle)
         use fmm2d_tree_module
         implicit real *8 (a-h,o-z)
 c
-c       Free tree resources for lfmm2dpart.
+c       Free tree resources for lfmm2dpart_opt_nd.
 c
 c       INPUT PARAMETERS:
-c       tree_handle: integer handle from lfmm2dpart_tree_build
+c       tree_handle: integer handle from lfmm2dpart_tree_build_opt
 c
         integer tree_handle
 c

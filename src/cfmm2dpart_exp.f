@@ -38,17 +38,17 @@ c \hessian  \phi(z_i) = \frac{\partial^2 \phi(z_i)}{\partial z^2}
 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c     cfmm2dpart - Generalized Cauchy FMM in R^2: evaluate all pairwise particle
+c     cfmm2dpart_exp_nd - Generalized Cauchy FMM in R^2: evaluate all pairwise particle
 c         interactions (ignoring self-interaction)
 c
-c     cfmm2dpartself - Generalized Cauchy FMM in R^2: evaluate all pairwise 
+c     cfmm2dpartself_exp_nd - Generalized Cauchy FMM in R^2: evaluate all pairwise 
 c         particle interactions (ignoring self-interaction)
 c
-c     cfmm2dparttarg - Generalized Cauchy FMM in R^2: evaluate all pairwise
+c     cfmm2dparttarg_exp_nd - Generalized Cauchy FMM in R^2: evaluate all pairwise
 c         particle interactions (ignoring self-interaction) +
 c         interactions with targets
 c
-c     c2dpartdirect - Generalized Cauchy  interactions in R^2:  evaluate all
+c     c2dpartdirect_exp_nd - Generalized Cauchy  interactions in R^2:  evaluate all
 c         pairwise particle interactions (ignoring self-interaction) +
 c         interactions with targets via direct O(N^2) algorithm
 c
@@ -61,7 +61,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c
 c
-        subroutine cfmm2dpart(ier,iprec,nd,nsource,source,
+        subroutine cfmm2dpart_exp_nd(ier,iprec,nd,nsource,source,
      $     ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess)
         implicit real *8 (a-h,o-z)
@@ -117,7 +117,7 @@ c
         ifgradtarg=0
         ifhesstarg=0
 c
-        call cfmm2dparttarg(ier,iprec,nd,nsource,source,
+        call cfmm2dparttarg_exp_nd(ier,iprec,nd,nsource,source,
      $     ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     ntarget,target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -130,7 +130,7 @@ c
 c
 c
 c
-        subroutine cfmm2dpartself(ier,iprec,nd,nsource,source,
+        subroutine cfmm2dpartself_exp_nd(ier,iprec,nd,nsource,source,
      $     ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess)
         implicit real *8 (a-h,o-z)
@@ -186,7 +186,7 @@ c
         ifgradtarg=0
         ifhesstarg=0
 c
-        call cfmm2dparttarg(ier,iprec,nd,nsource,source,
+        call cfmm2dparttarg_exp_nd(ier,iprec,nd,nsource,source,
      $     ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     ntarget,target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -199,7 +199,7 @@ c
 c
 c
 c
-        subroutine cfmm2dparttarg(ier,iprec,nd,nsource,source,
+        subroutine cfmm2dparttarg_exp_nd(ier,iprec,nd,nsource,source,
      $     ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     ntarget,target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -231,7 +231,7 @@ c \gradient \phi(z_i) = \frac{\partial \phi(z_i)}{\partial z}
 c \hessian  \phi(z_i) = \frac{\partial^2 \phi(z_i)}{\partial z^2}
 c
 c       This is primarily a memory management code. 
-c       The actual work is carried out in subroutine cfmm2dparttargmain.
+c       The actual work is carried out in subroutine cfmm2dparttargmain_exp.
 c
 c       INPUT PARAMETERS:
 c
@@ -532,7 +532,7 @@ c     reorder sources, targets so that each box holds
 c     contiguous list of source/target numbers.
 
 c
-        call c2dreorder(nd,nsource,source,ifcharge,charge,
+        call c2dreorder_exp_nd(nd,nsource,source,ifcharge,charge,
      $     wlists(iisource),ifdipole,dipstr,
      1     w(isourcesort),w(ichargesort),w(idipstrsort)) 
 c       
@@ -586,7 +586,7 @@ c
 c
         t1=second()
 C$        t1=omp_get_wtime()
-        call cfmm2dparttargmain(ier,iprec,nd,
+        call cfmm2dparttargmain_exp(ier,iprec,nd,
      $     ifevalfar,ifevalloc,
      $     nsource,w(isourcesort),wlists(iisource),
      $     ifcharge,w(ichargesort),
@@ -641,7 +641,7 @@ c
 c
 c
 c
-        subroutine cfmm2dparttargmain(ier,iprec,nd,
+        subroutine cfmm2dparttargmain_exp(ier,iprec,nd,
      $     ifevalfar,ifevalloc,
      $     nsource,sourcesort,isource,
      $     ifcharge,chargesort,
@@ -914,7 +914,7 @@ c
 c
             else
 
-            call cfmm2dpart_direct(nd,box1,box,sourcesort,
+            call cfmm2dpart_direct_exp(nd,box1,box,sourcesort,
      $         ifcharge,chargesort,ifdipole,dipstrsort,
      $         ifpot,pot,ifgrad,grad,ifhess,hess,
      $         targetsort,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -1015,7 +1015,7 @@ c
 
             else
 
-            call cfmm2dpart_direct(nd,box1,box,sourcesort,
+            call cfmm2dpart_direct_exp(nd,box1,box,sourcesort,
      $         ifcharge,chargesort,ifdipole,dipstrsort,
      $         ifpot,pot,ifgrad,grad,ifhess,hess,
      $         targetsort,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -1141,7 +1141,7 @@ c
 c
 c       ... evaluate self interactions
 c
-        call cfmm2dpart_direct_self_sym(nd,box,sourcesort,
+        call cfmm2dpart_direct_self_sym_exp(nd,box,sourcesort,
      $     ifcharge,chargesort,ifdipole,dipstrsort,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     targetsort,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -1167,7 +1167,7 @@ c       ... prune all sourceless boxes
 c
          if( box1(10) .eq. 0 ) goto 6203
 c
-            call cfmm2dpart_direct(nd,box1,box,sourcesort,
+            call cfmm2dpart_direct_exp(nd,box1,box,sourcesort,
      $         ifcharge,chargesort,ifdipole,dipstrsort,
      $         ifpot,pot,ifgrad,grad,ifhess,hess,
      $         targetsort,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -1215,7 +1215,7 @@ c
 c
 c
 c
-        subroutine cfmm2dpart_direct_self(nd,box,
+        subroutine cfmm2dpart_direct_self_exp(nd,box,
      $     source,ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -1275,7 +1275,7 @@ c
 c
 c
 c
-        subroutine cfmm2dpart_direct_self_sym(nd,box,
+        subroutine cfmm2dpart_direct_self_sym_exp(nd,box,
      $     source,ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -1350,7 +1350,7 @@ c
 c
 c
 c
-        subroutine cfmm2dpart_direct(nd,box,box1,
+        subroutine cfmm2dpart_direct_exp(nd,box,box1,
      $     source,ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -1397,7 +1397,7 @@ c
 c
 c
 c
-        subroutine c2dpartdirect(nd,nsource,
+        subroutine c2dpartdirect_exp_nd(nd,nsource,
      $     source,ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     ntarget,target,ifpottarg,pottarg,ifgradtarg,gradtarg,
@@ -1555,7 +1555,7 @@ c
 c
 c
 c
-        subroutine c2dreorder(nd,nsource,source,
+        subroutine c2dreorder_exp_nd(nd,nsource,source,
      $     ifcharge,charge,isource,ifdipole,
      1     dipstr,sourcesort,chargesort,dipstrsort)
         implicit real *8 (a-h,o-z)
@@ -1596,7 +1596,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c
 c
-        subroutine cfmm2dpart_tree_build(ier,iprec,
+        subroutine cfmm2dpart_tree_build_exp(ier,iprec,
      $     nsource,source,ntarget,target,tree_handle)
         use fmm2d_tree_module
         implicit real *8 (a-h,o-z)
@@ -1607,7 +1607,7 @@ c       Tree can be reused for multiple evaluations with different
 c       nd values and charge distributions.
 c
 c       INPUT:
-c         iprec - FMM precision flag (see cfmm2dparttarg docs)
+c         iprec - FMM precision flag (see cfmm2dparttarg_exp_nd docs)
 c         nsource - number of sources
 c         source(2,nsource) - source locations
 c         ntarget - number of targets
@@ -1750,7 +1750,7 @@ c
 c
 c
 c
-        subroutine cfmm2dpart_tree_free(tree_handle)
+        subroutine cfmm2dpart_tree_free_exp(tree_handle)
         use fmm2d_tree_module
         implicit real *8 (a-h,o-z)
         integer tree_handle
@@ -1758,7 +1758,7 @@ c
 c       Free FMM tree structure and deallocate all associated memory.
 c
 c       INPUT:
-c         tree_handle - handle returned by cfmm2dpart_tree_build
+c         tree_handle - handle returned by cfmm2dpart_tree_build_exp
 c
         call fmm2d_tree_dealloc(tree_handle,ier)
         return
@@ -1768,7 +1768,7 @@ c
 c
 c
 c
-        subroutine cfmm2dpart_tree_eval(ier,tree_handle,nd,
+        subroutine cfmm2dpart_tree_eval_exp(ier,tree_handle,nd,
      $     source,ifcharge,charge,ifdipole,dipstr,
      $     ifpot,pot,ifgrad,grad,ifhess,hess,
      $     target,ifpottarg,pottarg,ifgradtarg,gradtarg,ifhesstarg,
@@ -1778,13 +1778,13 @@ c
         integer tree_handle
 c
 c       Evaluate FMM using pre-built tree with arbitrary nd and charges.
-c       Tree must have been built with cfmm2dpart_tree_build.
+c       Tree must have been built with cfmm2dpart_tree_build_exp.
 c
 c       IMPORTANT: source and target locations must be IDENTICAL to
-c       those used in cfmm2dpart_tree_build. Only charges can change.
+c       those used in cfmm2dpart_tree_build_exp. Only charges can change.
 c
 c       INPUT:
-c         tree_handle - handle from cfmm2dpart_tree_build
+c         tree_handle - handle from cfmm2dpart_tree_build_exp
 c         nd - number of densities
 c         source(2,nsource) - source locations (must match tree_build)
 c         target(2,ntarget) - target locations (must match tree_build)
@@ -1911,7 +1911,7 @@ c
 c
 c       Reorder sources and charges using tree's sorting indices
 c
-        call c2dreorder(nd,tree%nsource,source,ifcharge,charge,
+        call c2dreorder_exp_nd(nd,tree%nsource,source,ifcharge,charge,
      $     tree%wlists(tree%iisource),ifdipole,dipstr,
      1     w(isourcesort),w(ichargesort),w(idipstrsort))
 c
@@ -1939,7 +1939,7 @@ c
         ifevalfar = 1
         ifevalloc = 1
 c
-        call cfmm2dparttargmain(ier,tree%iprec,nd,
+        call cfmm2dparttargmain_exp(ier,tree%iprec,nd,
      $     ifevalfar,ifevalloc,
      $     tree%nsource,w(isourcesort),tree%wlists(tree%iisource),
      $     ifcharge,w(ichargesort),

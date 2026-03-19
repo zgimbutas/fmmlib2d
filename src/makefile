@@ -165,7 +165,7 @@ vpath %.f .
 
 FMODS = fmm_tree_manager.f
 
-FSRCS = hfmm2dpart.f \
+FSRCS = hfmm2dpart.f hfmm2dpart_std.f hfmm2dpart_exp.f hfmm2dpart_far.f \
      hfmm2drouts.f hfmm2drouts_exp.f hfmm2drouts_far.f \
      hfmm2drouts_far_exp.f \
      d2tstrcr_omp.f d2mtreeplot.f \
@@ -174,13 +174,16 @@ FSRCS = hfmm2dpart.f \
 
 FSRCS += prini.f
 
-FSRCS += cfmm2dpart.f zfmm2dpart.f rfmm2dpart.f lfmm2dpart.f \
+FSRCS += cfmm2dpart.f cfmm2dpart_exp.f \
+     zfmm2dpart.f zfmm2dpart_exp.f \
+     rfmm2dpart.f rfmm2dpart_exp.f \
+     lfmm2dpart.f lfmm2dpart_exp.f lfmm2dpart_opt.f \
      lfmm2drouts.f lfmm2drouts_exp.f \
      l2dterms.f laprouts2d.f laprouts2d_exp.f
 
 FSRCS += dfft.f next235.f hwts2e.f lwtsexp2.f
 
-FSRCS += fmm2d_legacy.f
+FSRCS += fmm2d_legacy.f fmm2d_variant_wrappers.f
 
 ifeq ($(WITH_SECOND),1)
 FSRCS += second-r8.f
